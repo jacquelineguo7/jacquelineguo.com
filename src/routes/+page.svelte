@@ -225,11 +225,16 @@
         text-decoration: none;
         font-family: 'Commissioner', sans-serif;
         color: var(--primary--burgundy);
-        line-height: 160%;
-        padding: 0.5rem 2rem 0.5rem 2rem;
+        line-height: 120%;
+        padding: 0.8rem 2rem 0.8rem 2rem;
         border-bottom: 0.4px solid var(--primary--burgundy--64);
         counter-increment: notes;
         display: flex;            /* keeps number + text aligned as columns */
+
+        transition:
+        background-color var(--duration-base) var(--ease-out);
+        text-align: left;
+        align-items: top;
     }
 
     .li-top {
@@ -240,8 +245,13 @@
         content: "(" counter(notes) ") ";
         font-family: 'Hershey-Triplex-Bold';   /* the separate font */
         flex-shrink: 0;
-        line-height: 170%;
         margin-right: 0.5rem;
+    }
+
+    #notes .article-link:hover {
+        background-color: var(--yellow--hover);
+        content: " » ";
+        
     }
 
 
