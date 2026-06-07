@@ -39,10 +39,20 @@
             <div class="col" id="right-col">
                 <div id="selected-work">
                     <h2>Selected Work</h2>
-                    <img src={resolve('/favicon.svg')} alt="temp favicon">
+                    <div class="projects-div">
+                        <div class="project-card">
+                            <img src={resolve('/saturated-button.svg')} alt="temp project placeholder">
+                            <h3 class="project-title">Rabbitholing</h3>
+                            <p class="project-desc top-p">Transforming chat responses into a knowledge graph nodes and links.</p>
+                        </div>
+                        <div class="project-card">
+                            <img src={resolve('/saturated-button.svg')} alt="temp project placeholder">
+                            <h3 class="project-title">Photo Bingo</h3>
+                            <p class="project-desc top-p">Playful interaction design for a bingo group game.</p>
+                        </div>
+                    </div>
 
-                    <h3>Rabbitholing</h3>
-                    <p>Rabbithole into topics using LLMs by transforming chat responses into a knowledge graph nodes and links.</p>
+                    <a href={resolve('/')}>See More</a>
                 </div>
 
                 <div id="other">
@@ -161,8 +171,6 @@
         border-bottom: 2px dotted var(--secondary--blue);
     }
 
-    
-
     .zigzag {
         --s: 0.6rem;  /* control the size of the spikes */
         width: round(var(--w),4*var(--s)); 
@@ -174,12 +182,6 @@
             calc(2*var(--s)) calc(-1*var(--s))/calc(4*var(--s)) 100% intersect,
             repeating-conic-gradient(from atan(-.5) at var(--s),var(--_m))
             calc(-1*var(--s)) calc(2*var(--s))/100% calc(4*var(--s));
-    }
-
-    #selected-work {
-        flex: 2;
-        border: 4px solid var(--teriary-blue);
-        background-color: var(--primary--blue);
     }
     
     #other {
@@ -196,7 +198,7 @@
         text-decoration-thickness: 2px;
 
         transition:
-        background-color var(--duration-base) var(--ease-out);
+            background-color var(--duration-base) var(--ease-out);
     }
 
     .inline-link:hover {
@@ -252,6 +254,43 @@
         background-color: var(--yellow--hover);
         content: " » ";
         
+    }
+
+    #selected-work {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--primary--blue);
+        margin-top: 1rem;
+        border: 1rem solid var(--tertiary--blue);
+        padding: 3rem;
+        color: var(--barelythere--white);
+        align-items: center;
+    }
+
+    #selected-work p {
+        color: var(--barelythere--white);
+        line-height: 140%;
+    }
+
+    .project-title {
+        font-family: 'Commissioner';
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        padding: 0;
+    }
+
+    
+
+    .projects-div {
+        display: flex;
+        flex-direction: row;
+    }
+    
+    .project-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
 
