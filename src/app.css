@@ -6,12 +6,19 @@
     font-display: swap;
 }
 
-
 @font-face {
     font-family: 'Hershey-Triplex-Italic-Bold';
     src: url('/fonts/HersheyNoaillesTimes-Triplex-Italic-Bold-Static.otf') format('opentype');
     font-weight: bold;
     font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Hershey-Simplex-Light';
+    src: url('/fonts/HersheyNoaillesTimes-Simplex-Regular-Static.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
     font-display: swap;
 }
 
@@ -24,7 +31,7 @@
 }
 
 @font-face {
-    font-family: 'Monsieur';
+    font-family: 'Monsieur-La-Doulaise';
     src: url('/fonts/MonsieurLaDoulaise-Static.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
@@ -38,8 +45,15 @@
     --tertiary--blue: #68819D;
     --barelythere--white: #F9FAFB;
     --primary--burgundy: #932823;
+    --primary--burgundy--64: #93292364;
     --barelythere--yellow: #FAF9F1;
-    --yellow-outline: #E0DAB6;
+    --yellow--outline: #E0DAB6;
+    --hover--blue: #F0F5F6;
     
     font-size: 87.5%;
+
+    --duration-fast: 300ms;
+    --duration-base: 500ms;
+    --duration-slow: 800ms;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }

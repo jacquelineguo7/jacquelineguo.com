@@ -24,9 +24,15 @@
                 <div class="zigzag" id="notes">
                     <h2>Notes from the Garden</h2>
                     <ol>
-                        <li>Design Engineering Fieldnotes</li>
-                        <li>Graduating from USC? A checklist, so you can enjoy your time left</li>
-                        <li>Don’t delegate understanding</li>
+                        <li class="article li-top">
+                            <a href={resolve('/writing')} class="article-link">Design Engineering Fieldnotes</a>
+                        </li>
+                        <li class="article">
+                            <a href={resolve('/writing')} class="article-link">Graduating from USC? A checklist, so you can enjoy your time left</a>
+                        </li>
+                        <li class="article">
+                            <a href={resolve('/writing')} class="article-link">Don’t delegate understanding</a>
+                        </li>
                     </ol>
                 </div>
             </div>
@@ -120,7 +126,7 @@
     #name {
         margin: 0;
         padding: 0;
-        font-family: 'Monsieur';
+        font-family: 'Monsieur-La-Doulaise';
         font-size: 5.4rem;
         font-weight: 400;
         color: var(--primary--blue);
@@ -155,11 +161,7 @@
         border-bottom: 2px dotted var(--secondary--blue);
     }
 
-    #notes {
-        background-color: var(--barelythere--yellow);
-        padding: 2rem;
-        color: var(--primary--burgundy)
-    }
+    
 
     .zigzag {
         --s: 0.6rem;  /* control the size of the spikes */
@@ -172,7 +174,6 @@
             calc(2*var(--s)) calc(-1*var(--s))/calc(4*var(--s)) 100% intersect,
             repeating-conic-gradient(from atan(-.5) at var(--s),var(--_m))
             calc(-1*var(--s)) calc(2*var(--s))/100% calc(4*var(--s));
-        
     }
 
     #selected-work {
@@ -186,8 +187,62 @@
         display: flex;
         flex-direction: column;
     }
-    
 
+    .inline-link {
+        color: var(--primary--blue);
+        font-weight: 500;
+        text-decoration: underline dotted var(--secondary--blue);
+        text-underline-offset: 3px;
+        text-decoration-thickness: 2px;
+
+        transition:
+        background-color var(--duration-base) var(--ease-out);
+    }
+
+    .inline-link:hover {
+        color: var(--primary--blue);
+        background-color: var(--hover--blue);
+    }
+
+    #notes {
+        background-color: var(--barelythere--yellow);
+        padding: 2rem 0 2rem 0;
+        color: var(--primary--burgundy)
+    }
+
+    #notes h2 {
+        padding: 0 2rem 0 2rem;
+    }
+
+    #notes ol {
+        list-style: none;
+        counter-reset: notes;
+        margin: 0;
+        padding: 0;
+    }
+
+    #notes .article-link {
+        text-decoration: none;
+        font-family: 'Commissioner', sans-serif;
+        color: var(--primary--burgundy);
+        line-height: 160%;
+        padding: 0.5rem 2rem 0.5rem 2rem;
+        border-bottom: 0.4px solid var(--primary--burgundy--64);
+        counter-increment: notes;
+        display: flex;            /* keeps number + text aligned as columns */
+    }
+
+    .li-top {
+        border-top: 0.4px solid var(--primary--burgundy--64);
+    }
+
+    #notes .article-link::before {
+        content: "(" counter(notes) ") ";
+        font-family: 'Hershey-Triplex-Bold';   /* the separate font */
+        flex-shrink: 0;
+        line-height: 170%;
+        margin-right: 0.5rem;
+    }
 
 
 </style>
