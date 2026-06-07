@@ -15,9 +15,15 @@
 }
 
 @font-face {
-    font-family: 'Monsieur La Doulaise';
+    font-family: 'Monsieur';
     src: url('/fonts/MonsieurLaDoulaise-Static.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
+}
+
+:root {
+    --primary--blue: #4B5E74;
+    --background--blue: #E8EEF2;
+    --primary--burgundy: #932823;
 }
