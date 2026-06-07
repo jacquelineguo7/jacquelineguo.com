@@ -45,11 +45,6 @@
                             <h3 class="project-title">Rabbitholing</h3>
                             <p class="project-desc top-p">Transforming chat responses into a knowledge graph nodes and links.</p>
                         </div>
-                        <div class="project-card">
-                            <img src={resolve('/saturated-button.svg')} alt="temp project placeholder">
-                            <h3 class="project-title">Photo Bingo</h3>
-                            <p class="project-desc top-p">Playful interaction design for a bingo group game.</p>
-                        </div>
                     </div>
 
                     <a href={resolve('/')}>See More</a>
@@ -279,8 +274,6 @@
         margin-bottom: 0.5rem;
         padding: 0;
     }
-
-    
 
     .projects-div {
         display: flex;
