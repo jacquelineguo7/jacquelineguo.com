@@ -1,5 +1,5 @@
 <script>
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/slanted-saturated-button.svg';
 	import '../app.css';
 
 	let { children } = $props();

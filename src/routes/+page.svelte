@@ -39,8 +39,8 @@
                     <p>Rabbithole into topics using LLMs by transforming chat responses into a knowledge graph nodes and links.</p>
                 </div>
 
-                <div id="photo">
-                    <div>
+                <div id="other">
+                    <div id="photo">
                         <img src={resolve('/favicon.svg')} alt="temp place for photography">
                     </div>
 
@@ -112,13 +112,16 @@
         flex: 1;
         gap: 4rem;
     }
-    #right-col { flex: 1.6; }
+    #right-col {
+        flex: 1.6;
+        gap: 4rem;
+    }
     
     #name {
         margin: 0;
         padding: 0;
         font-family: 'Monsieur';
-        font-size: 5rem;
+        font-size: 5.4rem;
         font-weight: 400;
         color: var(--primary--blue);
         margin-bottom: -1.5rem;
@@ -137,6 +140,8 @@
         padding-bottom: 1.4rem;
         font-family: 'Hershey-Triplex-Bold';
         text-transform: uppercase;
+        color: var(--primary--blue);
+        text-decoration: none;
     }
 
     a {
@@ -167,7 +172,21 @@
             calc(2*var(--s)) calc(-1*var(--s))/calc(4*var(--s)) 100% intersect,
             repeating-conic-gradient(from atan(-.5) at var(--s),var(--_m))
             calc(-1*var(--s)) calc(2*var(--s))/100% calc(4*var(--s));
+        
     }
+
+    #selected-work {
+        flex: 2;
+        border: 4px solid var(--teriary-blue);
+        background-color: var(--primary--blue);
+    }
+    
+    #other {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
 
 
 
