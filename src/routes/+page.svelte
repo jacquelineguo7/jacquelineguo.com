@@ -1,6 +1,28 @@
 <script>
     import { resolve } from '$app/paths';
+
+    // CAROUSEL DATA
+    import Carousel from '$lib/Carousel.svelte';
+    const projects = [
+        { 
+            title: 'Photo Bingo',
+            desc: 'Creating a 10x group bingo game experience with playful interaction design',
+            media: '/projects/bingo/cover.mp4',
+            type: 'video',
+            link: resolve('/projects')
+        },
+        { 
+            title: 'Quartet VR',
+            desc: 'An immersive spatial audio experience for the Apple Vision Pro',
+            media: '/projects/quartetvr/cover.mp4',
+            type: 'video',
+            link: resolve('/projects')
+        }
+    ];
+
+
 </script>
+
 <div class="page-container">
     <div class="border">
         <div class="page-layout">
@@ -40,11 +62,7 @@
                 <div id="selected-work">
                     <h2>Selected Work</h2>
                     <div class="projects-div">
-                        <div class="project-card">
-                            <img src={resolve('/saturated-button.svg')} alt="temp project placeholder">
-                            <h3 class="project-title">Rabbitholing</h3>
-                            <p class="project-desc top-p">Transforming chat responses into a knowledge graph nodes and links.</p>
-                        </div>
+                        <Carousel {projects} />
                     </div>
 
                     <a href={resolve('/')}>See More</a>
@@ -67,6 +85,7 @@
 <style>
     :global(*) { box-sizing: border-box; }
     :global(body) { margin: 0;  }
+    :global(a) { text-align: left }
 
     p {
         font-family: 'Commissioner', sans-serif;

@@ -58,4 +58,6 @@
     --duration-base: 500ms;
     --duration-slow: 800ms;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+    
 }
