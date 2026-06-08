@@ -29,19 +29,21 @@
             <div class="col" id="left-col">
                 <div>
                     <h1 id="name">Jacqueline Guo</h1>
-                    <div id="intro">
-                        <p class="top-p">Hey! This is Jacqueline.</p>
-                        <p>I'm a designer, amateur engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC CS Games</a> grad (fight on!) based in the San Francisco Bay Area.</p>
-                        <p>I’m excited by solving hard problems with great people to make our world a better place, so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon getting to do just that.</p>
-                        <p>Outside of work, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student. Right now, I’m also learning more about frontend and building on the web. You can read my design engineering field notes <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing.</p>
-                        <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
+                    <div id="intro-section">
+                        <div id="intro">
+                            <p class="top-p">Hey! This is Jacqueline.</p>
+                            <p>I'm a designer, amateur engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC CS Games</a> grad (fight on!) based in the San Francisco Bay Area.</p>
+                            <p>I’m excited by solving hard problems with great people to make our world a better place, so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon getting to do just that.</p>
+                            <p>Outside of work, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student. Right now, I’m also learning more about frontend and building on the web. You can read my design engineering field notes <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing.</p>
+                            <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
+                        </div>
+                        <nav id="nav">
+                            <a class="nav-link" href={resolve('/work')}>Work</a>
+                            <a class="nav-link" href={resolve('/sandbox')}>Sandbox</a>
+                            <a class="nav-link" href={resolve('/writing')}>Writing</a>
+                            <a class="nav-link" href={resolve('/about')}>About</a>
+                        </nav>
                     </div>
-                    <nav id="nav">
-                        <a class="nav-link" href={resolve('/work')}>Work</a>
-                        <a class="nav-link" href={resolve('/sandbox')}>Sandbox</a>
-                        <a class="nav-link" href={resolve('/writing')}>Writing</a>
-                        <a class="nav-link" href={resolve('/about')}>About</a>
-                    </nav>
                 </div>
                 <div class="zigzag" id="notes">
                     <h2>Notes from the Garden</h2>
@@ -60,9 +62,22 @@
             </div>
             <div class="col" id="right-col">
                 <div id="selected-work">
-                    <h2>Selected Work</h2>
-                    <div class="projects-div">
-                        <Carousel {projects} />
+                    <h2>(Featured Work)</h2>
+                    <div class="projects-container">
+                        <div class="project-card">
+                            <div class="media-container">
+                                <video class="project-media" src="projects/quartetvr/cover.mp4" loop muted></video>
+                            </div>
+                            <h3 class="project-title">Quartet VR</h3>
+                            <p class="project-description">Building an immersive spatial audio experience with the Apple Vision Pro</p>
+                        </div>
+                        <div class="project-card">
+                            <div class="media-container">
+                                <video class="project-media" src="projects/bingo/cover.mp4" loop muted></video>
+                            </div>
+                            <h3 class="project-title">Photo Bingo</h3>
+                            <p class="project-description">Creating a 10x group bingo game experience</p>
+                        </div>
                     </div>
 
                     <a href={resolve('/')}>See More</a>
@@ -146,7 +161,11 @@
         flex: 1.6;
         gap: 4rem;
     }
-    
+
+    /* #intro-section {
+        box-shadow: 0px 2px 8px 0px rgba(61, 60, 60, 0.1);
+    }
+     */
     #name {
         margin: 0;
         padding: 0;
@@ -223,7 +242,7 @@
     #notes {
         background-color: var(--barelythere--yellow);
         padding: 2rem 0 2rem 0;
-        color: var(--primary--burgundy)
+        color: var(--primary--burgundy);
     }
 
     #notes h2 {
@@ -277,14 +296,17 @@
         background-color: var(--primary--blue);
         margin-top: 1rem;
         border: 1rem solid var(--tertiary--blue);
-        padding: 2rem;
+        padding: 3rem;
         color: var(--barelythere--white);
         align-items: center;
+        gap: 1rem;
+        box-shadow: inset 2px 4px 2px 0px var(--dark--blue);
     }
 
     #selected-work p {
         color: var(--barelythere--white);
         line-height: 140%;
+
     }
 
     .project-title {
@@ -294,15 +316,29 @@
         padding: 0;
     }
 
-    .projects-div {
+    .projects-container {
         display: flex;
         flex-direction: row;
+        gap: 1.5rem;
     }
     
     .project-card {
         flex: 1;
         display: flex;
         flex-direction: column;
+    }
+
+    .project-media {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .media-container {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        border-radius: 0.4rem;
     }
 
 
