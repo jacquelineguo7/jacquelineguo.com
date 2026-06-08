@@ -65,18 +65,26 @@
                     <h2>(Featured Work)</h2>
                     <div class="projects-container">
                         <div class="project-card">
-                            <div class="media-container">
-                                <video class="project-media" src="projects/quartetvr/cover.mp4" loop muted></video>
+                            <div class="stamp" id="quartetvr">
+                                <div class="media-container">
+                                    <video class="project-media" src="projects/quartetvr/cover.mp4" loop muted></video>
+                                </div>
                             </div>
-                            <h3 class="project-title">Quartet VR</h3>
-                            <p class="project-description">Building an immersive spatial audio experience with the Apple Vision Pro</p>
+                            <div class="project-details">
+                                <h3 class="project-title">Quartet VR</h3>
+                                <p class="project-description">Building an immersive spatial audio experience with the Apple Vision Pro</p>
+                            </div>
                         </div>
                         <div class="project-card">
-                            <div class="media-container">
-                                <video class="project-media" src="projects/bingo/cover.mp4" loop muted></video>
+                            <div class="stamp" id="bingo">
+                                <div class="media-container">
+                                    <video class="project-media" src="projects/bingo/cover.mp4" loop muted></video>
+                                </div>
                             </div>
-                            <h3 class="project-title">Photo Bingo</h3>
-                            <p class="project-description">Creating a 10x group bingo game experience</p>
+                            <div class="project-details">
+                                <h3 class="project-title">Photo Bingo</h3>
+                                <p class="project-description">Creating a 10x group bingo game experience</p>
+                            </div>
                         </div>
                     </div>
 
@@ -300,13 +308,12 @@
         color: var(--barelythere--white);
         align-items: center;
         gap: 1rem;
-        box-shadow: inset 2px 4px 2px 0px var(--dark--blue);
+        box-shadow: inset 2px 4px 0px 0px var(--dark--blue);
     }
 
     #selected-work p {
         color: var(--barelythere--white);
         line-height: 140%;
-
     }
 
     .project-title {
@@ -335,10 +342,32 @@
     }
 
     .media-container {
-        width: 100%;
+        margin: 0.5rem;
         aspect-ratio: 16 / 10;
         overflow: hidden;
-        border-radius: 0.4rem;
+    }
+
+    .project-details p {
+        margin: 0;
+    }
+
+    .stamp {
+        --r: 0.8rem; /* control the radius */
+
+        padding: var(--r);
+        background: var(--tertiary--blue);
+        mask: 
+            radial-gradient(50% 50%,#0000 66%,#000 67%) round 
+            var(--r) var(--r)/calc(2*var(--r)) calc(2*var(--r)), 
+            conic-gradient(#000 0 0) content-box;
+    }
+
+    .stamp#quartetvr {
+        background: var(--quartetvr--bg);
+    }
+
+    .stamp#bingo {
+        background: var(--bingo--bg);
     }
 
 
