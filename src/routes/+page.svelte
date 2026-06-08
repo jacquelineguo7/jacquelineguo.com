@@ -277,7 +277,7 @@
         background-color: var(--primary--blue);
         margin-top: 1rem;
         border: 1rem solid var(--tertiary--blue);
-        padding: 3rem;
+        padding: 2rem;
         color: var(--barelythere--white);
         align-items: center;
     }

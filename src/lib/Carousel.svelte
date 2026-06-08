@@ -26,21 +26,21 @@
     Syntax: # to open, : for middle branches, / to close -->
 
 <div class="carousel">
-    <button class="arrow" onclick={prevproj} aria-label="Previous Project">Prev</button>
-
     <a class="project-card" href={projects[current].link}>
-        {#if projects[current].type === 'video'}
-            <video class="project-media" src={projects[current].media} autoplay loop muted playsinline></video>
-        {:else}
-            <img class="project-media" src={projects[current].media} alt={projects[current].title}>
-        {/if}
-
+        <div class="media-wrap">
+            {#if projects[current].type === 'video'}
+                <video class="project-media" src={projects[current].media} autoplay loop muted playsinline></video>
+            {:else}
+                <img class="project-media" src={projects[current].media} alt={projects[current].title}>
+            {/if}
+        </div>
         <h3 class="project-title">{projects[current].title}</h3>
         <p class="project-desc">{projects[current].desc}</p>
-
     </a>
-
-    <button class="arrow" onclick={nextproj} aria-label="Next Project">Next</button>
+    <div>
+        <button class="arrow" onclick={prevproj} aria-label="Previous Project">&lt;</button>
+        <button class="arrow" onclick={nextproj} aria-label="Next Project">&gt;</button>
+    </div>
 </div>
 
 
@@ -51,26 +51,44 @@
 <style>
     .carousel {
         display: flex;
+        flex-direction: column;
         align-items: center;
         gap: 1rem;
     }
+
     .project-card {
-        flex: 1;
+        min-width: 0;
         text-decoration: none;
         color: inherit;
-        display: flex;
-        flex-direction: column;
     }
-        .project-media {
+
+    .media-wrap {
+        background: var(--tertiary--blue);
+        position: relative;
         width: 100%;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: 16 / 10;   /* reserves the space even when inner is empty mid-swap */
+        overflow: hidden;
+    }
+
+    .project-media {
+        position: absolute;
+        inset: 0;               /* top/right/bottom/left all 0 → fill the parent */
+        width: 100%;
+        height: 100%;
         object-fit: cover;
     }
+    
     .arrow {
         flex-shrink: 0;
         background: none;
         border: none;
-        font-size: 2rem;
+        font-size: 1rem;
         cursor: pointer;
+        margin: 0 1rem 0 1rem;
     }
+
+
+
+
+    
 </style>
