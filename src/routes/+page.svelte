@@ -351,8 +351,8 @@
         margin: 0;
     }
 
-    .stamp {
-        --r: 0.8rem; /* control the radius */
+    /* .stamp {
+        --r: 0.8rem;
 
         padding: var(--r);
         background: var(--tertiary--blue);
@@ -360,7 +360,7 @@
             radial-gradient(50% 50%,#0000 66%,#000 67%) round 
             var(--r) var(--r)/calc(2*var(--r)) calc(2*var(--r)), 
             conic-gradient(#000 0 0) content-box;
-    }
+    } */
 
     .stamp#quartetvr {
         background: var(--quartetvr--bg);
