@@ -33,7 +33,7 @@
                         <div id="intro">
                             <p class="top-p">Hey! This is Jacqueline.</p>
                             <p>I'm a designer, amateur engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC CS Games</a> grad (fight on!) based in the San Francisco Bay Area.</p>
-                            <p>I’m excited by solving hard problems with great people to make our world a better place, so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon getting to do just that.</p>
+                            <p>I’m excited by solving hard problems with great people to make our world a better place, so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon getting to do just that. Previously, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> working on dev tooling and AI.</p>
                             <p>Outside of work, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student. Right now, I’m also learning more about frontend and building on the web. You can read my design engineering field notes <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing.</p>
                             <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
                         </div>
@@ -93,10 +93,10 @@
 
                 <div id="other">
                     <div id="photo">
-                        <img src={resolve('/favicon.svg')} alt="temp place for photography">
+                        <img src="/photos/JQG001.webp" alt="temp place for photography">
                     </div>
 
-                    <div>
+                    <div id="random">
                         <p>random div that idk what to do with rn</p>
                     </div>
                 </div>
@@ -142,23 +142,25 @@
     }
 
     .border {
+        flex: 1;            /* fill the width of page-container */
         margin: 2rem;
         border: 1px dashed #B1C8DC;
+        display: flex;      /* so page-layout can fill its height */
+        min-height: 0;
     }
 
     .page-layout {
+        flex: 1;            /* fill the height of .border */
         display: flex;
         padding: 3rem 5rem 4rem 5rem;
         gap: 5rem;
-    }
-
-    .border {
-        border: 1px dashed #B1C8DC;
+        min-height: 0;      /* allow children to shrink instead of overflowing */
     }
 
     .col {
         display: flex;
         flex-direction: column;
+        min-height: 0;      /* let inner flex sections share height */
     }
 
     #left-col {
@@ -181,7 +183,7 @@
         font-size: 5.4rem;
         font-weight: 400;
         color: var(--primary--blue);
-        margin-bottom: -1.5rem;
+        margin-bottom: -1.8rem;
         z-index: 2;
     }
 
@@ -226,9 +228,24 @@
     }
     
     #other {
-        flex: 1;
         display: flex;
         flex-direction: column;
+    }
+
+    #photo {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    #photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    #random {
+        flex: 1;
     }
 
     .inline-link {
