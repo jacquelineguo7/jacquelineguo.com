@@ -38,12 +38,31 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'Whois';
+    src: url('/fonts/Whois-Mono-Static.woff') format('woff');
+    font-weight: normal;
+    font-style: monospace;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GeistMono';
+    src: url('/fonts/GeistMono-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: monospace;
+    font-display: swap;
+}
+
 :root {
     --primary--blue: #4B5E74;
+    --primary--blue--32: #4B5E7432;
     --background--blue: #E8EEF2;
     --secondary--blue: #92B2D0;
     --tertiary--blue: #68819D;
     --dark--blue: #374657;
+    --dark--blue--64: #37465764;
+    --darker--blue: #171a1d;
     --barelythere--white: #F9FAFB;
     --primary--burgundy: #932823;
     --primary--burgundy--12: #93292312;

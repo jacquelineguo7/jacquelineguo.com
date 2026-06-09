@@ -62,33 +62,39 @@
             </div>
             <div class="col" id="right-col">
                 <div id="selected-work">
-                    <h2>(Featured Work)</h2>
+                    <h2 id="feature">Featured Work</h2>
                     <div class="projects-container">
                         <div class="project-card">
-                            <div class="stamp" id="quartetvr">
-                                <div class="media-container">
-                                    <video class="project-media" src="projects/quartetvr/cover.mp4" loop muted></video>
-                                </div>
+                            <div class="media-container">
+                                <video class="project-media" src="projects/quartetvr/cover.mp4" loop muted></video>
                             </div>
                             <div class="project-details">
-                                <h3 class="project-title">Quartet VR</h3>
-                                <p class="project-description">Building an immersive spatial audio experience with the Apple Vision Pro</p>
+                                <div class="title-section">
+                                    <h3 class="project-title">Quartet VR</h3>
+                                    <p class="mini-desc">3d design + dev</p>
+                                    
+                                </div>
+                                <p class="project-description">Building a spatial audio experience for the Apple Vision Pro</p>
+                                <!-- <div class="tag-container">
+                                        <p class="project-tag">Vibe Coding</p>
+                                        <p class="project-tag">Spatial Design</p>
+                                </div> -->
                             </div>
                         </div>
                         <div class="project-card">
-                            <div class="stamp" id="bingo">
-                                <div class="media-container">
-                                    <video class="project-media" src="projects/bingo/cover.mp4" loop muted></video>
-                                </div>
+                            <div class="media-container">
+                                <video class="project-media" src="projects/bingo/cover.mp4" loop muted></video>
                             </div>
                             <div class="project-details">
-                                <h3 class="project-title">Photo Bingo</h3>
-                                <p class="project-description">Creating a 10x group bingo game experience</p>
+                                <div class="title-section">
+                                    <h3 class="project-title">Photo Bingo</h3>
+                                    <p class="mini-desc">Motion + Interaction</p>
+                                </div>
+                                
+                                <p class="project-description">Designing a delightfully interactive game for group bonding</p>
                             </div>
                         </div>
                     </div>
-
-                    <a href={resolve('/')}>See More</a>
                 </div>
 
                 <div id="other">
@@ -315,22 +321,24 @@
     }
 
     #selected-work {
-        flex: 2;
         display: flex;
         flex-direction: column;
-        background-color: var(--primary--blue);
-        margin-top: 1rem;
-        border: 1rem solid var(--tertiary--blue);
-        padding: 3rem;
-        color: var(--barelythere--white);
-        align-items: center;
-        gap: 1rem;
-        box-shadow: inset 2px 4px 0px 0px var(--dark--blue);
+        background-color: #d7e3eb;
+        /* border: 0.2rem dotted var(--secondary--blue); */
+        padding: 2rem;
+        color: var(--primary--blue);
+        align-items: baseline;
+        gap: 2rem;
+        border-radius: 1rem;
+        height: 100%;
     }
 
     #selected-work p {
-        color: var(--barelythere--white);
         line-height: 140%;
+    }
+
+     #selected-work h2 {
+        margin-bottom: 0;
     }
 
     .project-title {
@@ -343,7 +351,7 @@
     .projects-container {
         display: flex;
         flex-direction: row;
-        gap: 1.5rem;
+        gap: 2rem;
     }
     
     .project-card {
@@ -359,33 +367,65 @@
     }
 
     .media-container {
-        margin: 0.5rem;
+        /* margin: 0.5rem; */
         aspect-ratio: 16 / 10;
         overflow: hidden;
+        position: relative;
+        border-radius: 0.4rem;
+    }
+
+    .media-container::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        /* box-shadow: inset 2px 3px 0px 0px var(--dark--blue--64); */
+        pointer-events: none;
     }
 
     .project-details p {
         margin: 0;
     }
 
-    /* .stamp {
-        --r: 0.8rem;
-
-        padding: var(--r);
-        background: var(--tertiary--blue);
-        mask: 
-            radial-gradient(50% 50%,#0000 66%,#000 67%) round 
-            var(--r) var(--r)/calc(2*var(--r)) calc(2*var(--r)), 
-            conic-gradient(#000 0 0) content-box;
-    } */
-
-    .stamp#quartetvr {
-        background: var(--quartetvr--bg);
+    .title-section {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 1.2rem 0 0.4rem 0;
+        gap: 1rem;
     }
 
-    .stamp#bingo {
-        background: var(--bingo--bg);
+    .project-tag {
+        line-height: 100%;
+        background-color: #edf6fc;
+        padding: 0.05rem 0.4rem 0.05rem 0.4rem;
+        font-family: "GeistMono";
+        font-size: 0.9rem;
+        border-radius: 0.5rem;
+        text-transform: uppercase;
     }
+
+    .mini-desc {
+        line-height: 100%;
+        font-family: "Whois";
+        font-size: 1rem;
+        text-transform: uppercase;
+        opacity: 48%;
+        padding-top: 0.2rem;
+        letter-spacing: 0.05rem;
+        font-weight: bold;
+    }
+
+    .title-section h3 {
+        margin: 0;
+    }
+
+    .tag-container {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+
 
 
 </style>
