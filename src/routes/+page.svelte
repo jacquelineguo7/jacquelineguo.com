@@ -33,7 +33,7 @@
                         <div id="intro">
                             <p class="top-p">Hey! This is Jacqueline.</p>
                             <p>I'm a designer, amateur engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC CS Games</a> grad (fight on!) based in the San Francisco Bay Area.</p>
-                            <p>I’m excited by solving hard problems with great people to make our world a better place, so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon getting to do just that. Previously, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> working on dev tooling and AI.</p>
+                            <p>I’m excited by tackling hard, technical problems with great people to make our world a better place, and so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon. Previously, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> working on dev tooling and AI.</p>
                             <p>Outside of work, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student. Right now, I’m also learning more about frontend and building on the web. You can read my design engineering field notes <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing.</p>
                             <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
                         </div>
@@ -235,12 +235,15 @@
     
     #other {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        gap: 4rem;
     }
 
     #photo {
-        flex: 1;
+        flex: 0.8;
         overflow: hidden;
+        padding: 1rem 1rem 3.5rem 1rem;
+        background-color: white;
     }
 
     #photo img {
@@ -330,7 +333,6 @@
         align-items: baseline;
         gap: 2rem;
         border-radius: 1rem;
-        height: 100%;
     }
 
     #selected-work p {
