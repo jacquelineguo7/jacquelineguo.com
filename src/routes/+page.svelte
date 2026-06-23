@@ -1,24 +1,45 @@
 <script>
     import { resolve } from '$app/paths';
 
-    // CAROUSEL DATA
-    import Carousel from '$lib/Carousel.svelte';
-    const projects = [
-        { 
-            title: 'Photo Bingo',
-            desc: 'Creating a 10x group bingo game experience with playful interaction design',
-            media: '/projects/bingo/cover.mp4',
-            type: 'video',
-            link: resolve('/projects')
-        },
-        { 
-            title: 'Quartet VR',
-            desc: 'An immersive spatial audio experience for the Apple Vision Pro',
-            media: '/projects/quartetvr/cover.mp4',
-            type: 'video',
-            link: resolve('/projects')
+    let cardbingo = $state({ x: 56, y: 186, rotation: -2, width: 12 });
+    let cardxcode = $state({ x: 300, y: 400, rotation: 3, width: 14 });
+
+    function draggable(node, pos) {
+    let startX, startY, originX, originY;
+
+    function onPointerDown(event) {
+        event.preventDefault();   // stops native image-drag + text selection
+        startX = event.clientX;            // where the pointer grabbed
+        startY = event.clientY;
+        originX = pos.x;                   // where the item was at that moment
+        originY = pos.y;
+        node.setPointerCapture(event.pointerId);
+        node.addEventListener('pointermove', onPointerMove);
+        node.addEventListener('pointerup', onPointerUp);
+    }
+
+    function onPointerMove(event) {
+        // new position = original position + how far the pointer moved
+        pos.x = originX + (event.clientX - startX);
+        pos.y = originY + (event.clientY - startY);
+    }
+
+    function onPointerUp(event) {
+        node.releasePointerCapture(event.pointerId);
+        node.removeEventListener('pointermove', onPointerMove);
+        node.removeEventListener('pointerup', onPointerUp);
+    }
+
+    node.addEventListener('pointerdown', onPointerDown);
+
+    return {
+        destroy() {
+            node.removeEventListener('pointerdown', onPointerDown);
         }
-    ];
+    };
+
+
+}
 
 
 </script>
@@ -62,37 +83,34 @@
             </div>
             <div class="col" id="right-col">
                 <div id="selected-work">
-                    <h2 id="feature">Featured Work</h2>
-                    <div class="projects-container">
-                        <div class="project-card">
-                            <div class="media-container">
-                                <video class="project-media" src="projects/quartetvr/cover.mp4" loop muted></video>
-                            </div>
-                            <div class="project-details">
-                                <div class="title-section">
-                                    <h3 class="project-title">Quartet VR</h3>
-                                    <p class="mini-desc">3d design + dev</p>
-                                    
-                                </div>
-                                <p class="project-description">Building a spatial audio experience for the Apple Vision Pro</p>
-                                <!-- <div class="tag-container">
-                                        <p class="project-tag">Vibe Coding</p>
-                                        <p class="project-tag">Spatial Design</p>
-                                </div> -->
-                            </div>
+                    <div class="envelope-decor">
+                        <div class="env-left">
+                            <h2 id="feature">Featured Work</h2>
+                            <div class="line-media-container"></div>
                         </div>
-                        <div class="project-card">
-                            <div class="media-container">
-                                <video class="project-media" src="projects/bingo/cover.mp4" loop muted></video>
-                            </div>
-                            <div class="project-details">
-                                <div class="title-section">
-                                    <h3 class="project-title">Photo Bingo</h3>
-                                    <p class="mini-desc">Motion + Interaction</p>
-                                </div>
-                                
-                                <p class="project-description">Designing a delightfully interactive game for group bonding</p>
-                            </div>
+                        <div class="env-right">
+                            <div class="stamp-div"></div>
+                        </div>
+                    </div>
+                    <div
+                        class="floating-item"
+                        use:draggable={cardbingo}
+                        style="transform: translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)"
+                    >   
+                        <div class="example-card">
+                            <img src="/projects/bingo/stamp.png" alt="photobingo" draggable="false">
+                            <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="floating-item"
+                        use:draggable={cardxcode}
+                        style="transform: translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)"
+                    >   
+                        <div class="example-card">
+                            <img src="/projects/xcode/stamp.png" alt="xcode" draggable="false">
+                            <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span>
                         </div>
                     </div>
                 </div>
@@ -324,15 +342,71 @@
     }
 
     #selected-work {
-        display: flex;
-        flex-direction: column;
-        background-color: #d7e3eb;
-        /* border: 0.2rem dotted var(--secondary--blue); */
+        position: relative;   /* the stage: floating items measure x/y from here */
+        min-height: 45vh;    /* canvas room — absolute items don't prop this open */
+        background-color: #F8F8F4;
         padding: 2rem;
         color: var(--primary--blue);
         align-items: baseline;
         gap: 2rem;
-        border-radius: 1rem;
+    }
+
+    .envelope-decor {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .env-left {
+        flex: 1;
+    }
+
+    .env-right {
+        display: flex;
+        justify-content: end;
+        flex: 3;
+    }
+
+    .stamp-div {
+        width: 10rem;
+        height: 8rem;
+        border: 0.2rem double var(--secondary--blue);
+    }
+
+    .line-media-container {
+        margin-top: 1rem;
+        height: 6rem;
+        background-image: repeating-linear-gradient(
+            to bottom,
+            var(--secondary--blue) 0 1px,   /* line */
+            transparent 1px 1.8rem          /* gap (period) */
+        );
+    }
+
+    /* ───── Floating layer ───── */
+    .floating-item {
+        position: absolute;      /* lifts out of flow; positioned from the stage */
+        top: 0;
+        left: 0;                 /* origin = stage top-left; transform does the moving */
+        cursor: grab;
+        touch-action: none;      /* stop the browser scrolling/zooming mid-drag */
+        user-select: none;       /* don't select text while dragging */
+        padding: 0;
+        margin: 0;
+    }
+    .floating-item:active {
+        cursor: grabbing;
+    }
+
+    .example-card {
+        width: 13rem;
+    }
+
+    .example-card img {
+        display: block;
+        width: 100%;         /* fill the card's width */
+        height: auto;        /* height follows automatically → no distortion */
     }
 
     #selected-work p {
