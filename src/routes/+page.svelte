@@ -2,7 +2,7 @@
     import { resolve } from '$app/paths';
 
     let cardbingo = $state({ x: 50, y: 170, rotation: -2, width: 12 });
-    let cardxcode = $state({ x: 270, y: 250, rotation: 0, width: 16 });
+    let cardxcode = $state({ x: 265, y: 235, rotation: 0, width: 16 });
     let cardrabbit = $state({ x: 260, y: 60, rotation: 3, width: 14 });
 
     function draggable(node, pos) {
@@ -102,7 +102,7 @@
                     >
                         <div class="example-card">
                             <img src="/projects/bingo/stamp.png" alt="xcode" draggable="false">
-                            <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span>
+                            <!-- <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span> -->
                         </div>
                     </div>
 
@@ -114,7 +114,7 @@
                     >
                         <div class="example-card">
                             <img src="/projects/xcode/stamp.png" alt="xcode" draggable="false">
-                            <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span>
+                            <!-- <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span> -->
                         </div>
                     </div>
 
@@ -126,7 +126,7 @@
                     >
                         <div class="example-card">
                             <img src="/projects/rabbitholing/stamp.png" alt="xcode" draggable="false">
-                            <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span>
+                            <!-- <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span> -->
                         </div>
                     </div>
 
