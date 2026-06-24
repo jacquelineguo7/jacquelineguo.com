@@ -1,9 +1,11 @@
 <script>
     import { resolve } from '$app/paths';
-
+    
     let cardbingo = $state({ x: 50, y: 170, rotation: -2, width: 12 });
     let cardxcode = $state({ x: 265, y: 235, rotation: 0, width: 16 });
     let cardrabbit = $state({ x: 260, y: 60, rotation: 3, width: 14 });
+
+    
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
@@ -31,7 +33,7 @@
         node.removeEventListener('pointerup', onPointerUp);
     }
 
-    node.addEventListener('pointerdown', onPointerDown);
+        node.addEventListener('pointerdown', onPointerDown);
 
     return {
         destroy() {
@@ -90,16 +92,18 @@
                             <div class="line-media-container"></div>
                         </div>
                         <div class="env-right">
-                            <div class="stamp-div"></div>
+                            <div class="stamp-div">
+                                <p class="stamp-text">Place<br>Stamp<br>Here</p>
+                            </div>
                         </div>
                     </div>
 
                     <div
                         class="floating-item"
-                        use:draggable={cardbingo}
                         style:--card-w="{cardbingo.width}rem"
                         style:transform="translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)"
                     >
+                    <!-- use:draggable={cardbingo} removed -->
                         <div class="example-card">
                             <img src="/projects/bingo/stamp.png" alt="xcode" draggable="false">
                             <!-- <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span> -->
@@ -108,10 +112,10 @@
 
                     <div
                         class="floating-item"
-                        use:draggable={cardxcode}
                         style:--card-w="{cardxcode.width}rem"
                         style:transform="translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)"
                     >
+                    <!-- use:draggable={cardxcode} removed -->
                         <div class="example-card">
                             <img src="/projects/xcode/stamp.png" alt="xcode" draggable="false">
                             <!-- <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span> -->
@@ -120,10 +124,10 @@
 
                     <div
                         class="floating-item"
-                        use:draggable={cardrabbit}
                         style:--card-w="{cardrabbit.width}rem"
                         style:transform="translate3d({cardrabbit.x}px, {cardrabbit.y}px, 0) rotate({cardrabbit.rotation}deg)"
                     >
+                    <!-- use:draggable={cardrabbit} removed -->
                         <div class="example-card">
                             <img src="/projects/rabbitholing/stamp.png" alt="xcode" draggable="false">
                             <!-- <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span> -->
@@ -362,7 +366,7 @@
         position: relative;   /* the stage: floating items measure x/y from here */
         min-height: 45vh;    /* canvas room — absolute items don't prop this open */
         background-color: #F8F8F4;
-        padding: 2rem;
+        padding: 3rem;
         color: var(--primary--blue);
         align-items: baseline;
         gap: 2rem;
@@ -376,7 +380,7 @@
     }
 
     .env-left {
-        flex: 1;
+        width: 12rem;
         display: flex;
         flex-direction: column;
     }
@@ -384,13 +388,21 @@
     .env-right {
         display: flex;
         justify-content: end;
-        flex: 3;
     }
 
-    .stamp-div {
+    .stamp-div {   
+        display: flex;
         width: 10rem;
         height: 8rem;
         border: 0.3rem double var(--light--blue);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .stamp-div p {
+        font-family: 'Whois';
+        text-transform: uppercase;
+        text-align: center;
     }
 
     .line-media-container {
@@ -403,20 +415,20 @@
         );
     }
 
-    /* ───── Floating layer ───── */
     .floating-item {
         position: absolute;      /* lifts out of flow; positioned from the stage */
         top: 0;
         left: 0;                 /* origin = stage top-left; transform does the moving */
-        cursor: grab;
-        touch-action: none;      /* stop the browser scrolling/zooming mid-drag */
-        user-select: none;       /* don't select text while dragging */
+        /* cursor: grab; */
+        /* touch-action: none; */
+        /* user-select: none; */
         padding: 0;
         margin: 0;
+        
     }
-    .floating-item:active {
+    /* .floating-item:active {
         cursor: grabbing;
-    }
+    } */
 
     .example-card {
         width: var(--card-w, 13rem);
