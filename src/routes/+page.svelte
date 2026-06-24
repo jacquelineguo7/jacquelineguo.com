@@ -1,8 +1,9 @@
 <script>
     import { resolve } from '$app/paths';
 
-    let cardbingo = $state({ x: 56, y: 186, rotation: -2, width: 12 });
-    let cardxcode = $state({ x: 300, y: 400, rotation: 3, width: 14 });
+    let cardbingo = $state({ x: 50, y: 170, rotation: -2, width: 12 });
+    let cardxcode = $state({ x: 270, y: 250, rotation: 0, width: 16 });
+    let cardrabbit = $state({ x: 260, y: 60, rotation: 3, width: 14 });
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
@@ -92,13 +93,15 @@
                             <div class="stamp-div"></div>
                         </div>
                     </div>
+
                     <div
                         class="floating-item"
                         use:draggable={cardbingo}
-                        style="transform: translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)"
-                    >   
+                        style:--card-w="{cardbingo.width}rem"
+                        style:transform="translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)"
+                    >
                         <div class="example-card">
-                            <img src="/projects/bingo/stamp.png" alt="photobingo" draggable="false">
+                            <img src="/projects/bingo/stamp.png" alt="xcode" draggable="false">
                             <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span>
                         </div>
                     </div>
@@ -106,13 +109,27 @@
                     <div
                         class="floating-item"
                         use:draggable={cardxcode}
-                        style="transform: translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)"
-                    >   
+                        style:--card-w="{cardxcode.width}rem"
+                        style:transform="translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)"
+                    >
                         <div class="example-card">
                             <img src="/projects/xcode/stamp.png" alt="xcode" draggable="false">
                             <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span>
                         </div>
                     </div>
+
+                    <div
+                        class="floating-item"
+                        use:draggable={cardrabbit}
+                        style:--card-w="{cardrabbit.width}rem"
+                        style:transform="translate3d({cardrabbit.x}px, {cardrabbit.y}px, 0) rotate({cardrabbit.rotation}deg)"
+                    >
+                        <div class="example-card">
+                            <img src="/projects/rabbitholing/stamp.png" alt="xcode" draggable="false">
+                            <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div id="other">
@@ -400,7 +417,7 @@
     }
 
     .example-card {
-        width: 13rem;
+        width: var(--card-w, 13rem);
     }
 
     .example-card img {
@@ -408,100 +425,5 @@
         width: 100%;         /* fill the card's width */
         height: auto;        /* height follows automatically → no distortion */
     }
-
-    #selected-work p {
-        line-height: 140%;
-    }
-
-     #selected-work h2 {
-        margin-bottom: 0;
-    }
-
-    .project-title {
-        font-family: 'Commissioner';
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        padding: 0;
-    }
-
-    .projects-container {
-        display: flex;
-        flex-direction: row;
-        gap: 2rem;
-    }
-    
-    .project-card {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .project-media {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .media-container {
-        /* margin: 0.5rem; */
-        aspect-ratio: 16 / 10;
-        overflow: hidden;
-        position: relative;
-        border-radius: 0.4rem;
-    }
-
-    .media-container::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        /* box-shadow: inset 2px 3px 0px 0px var(--dark--blue--64); */
-        pointer-events: none;
-    }
-
-    .project-details p {
-        margin: 0;
-    }
-
-    .title-section {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        margin: 1.2rem 0 0.4rem 0;
-        gap: 1rem;
-    }
-
-    .project-tag {
-        line-height: 100%;
-        background-color: #edf6fc;
-        padding: 0.05rem 0.4rem 0.05rem 0.4rem;
-        font-family: "GeistMono";
-        font-size: 0.9rem;
-        border-radius: 0.5rem;
-        text-transform: uppercase;
-    }
-
-    .mini-desc {
-        line-height: 100%;
-        font-family: "Whois";
-        font-size: 1rem;
-        text-transform: uppercase;
-        opacity: 48%;
-        padding-top: 0.2rem;
-        letter-spacing: 0.05rem;
-        font-weight: bold;
-    }
-
-    .title-section h3 {
-        margin: 0;
-    }
-
-    .tag-container {
-        display: flex;
-        flex-direction: row;
-        gap: 0.5rem;
-    }
-
-
-
 
 </style>
