@@ -377,6 +377,8 @@
 
     .env-left {
         flex: 1;
+        display: flex;
+        flex-direction: column;
     }
 
     .env-right {
@@ -388,16 +390,16 @@
     .stamp-div {
         width: 10rem;
         height: 8rem;
-        border: 0.2rem double var(--secondary--blue);
+        border: 0.3rem double var(--light--blue);
     }
 
     .line-media-container {
         margin-top: 1rem;
-        height: 6rem;
+        flex: 1;
         background-image: repeating-linear-gradient(
             to bottom,
-            var(--secondary--blue) 0 1px,   /* line */
-            transparent 1px 1.8rem          /* gap (period) */
+            var(--light--blue) 0 0.1rem,   /* line */
+            transparent 0.1rem 1.8rem          /* gap (period) */
         );
     }
 
