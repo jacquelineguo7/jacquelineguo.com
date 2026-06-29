@@ -2,6 +2,8 @@
     import { resolve } from '$app/paths';
     import { goto } from '$app/navigation';
 
+    let moved;
+
     let cardbingo = $state({
         x: 50, y: 170, rotation: -2, width: 12,
         href: '/work/bingo',
@@ -33,6 +35,8 @@
     let startX, startY, originX, originY;
 
     function onPointerDown(event) {
+        moved = false;
+
         event.preventDefault();   // stops native image-drag + text selection
         startX = event.clientX;            // where the pointer grabbed
         startY = event.clientY;
@@ -47,6 +51,10 @@
         // new position = original position + how far the pointer moved
         pos.x = originX + (event.clientX - startX);
         pos.y = originY + (event.clientY - startY);
+
+        if (Math.hypot(event.clientX - startX, event.clientY - startY) > 4) {
+            moved = true; // drag, not click
+        }
     }
 
     function onPointerUp(event) {
@@ -54,7 +62,7 @@
         node.removeEventListener('pointermove', onPointerMove);
         node.removeEventListener('pointerup', onPointerUp);
 
-        if (isOverDropZone(node)) {
+        if (moved && isOverDropZone(node)) {
             goto(resolve(pos.href));   // landed on the box → open project
         }
     }
@@ -92,9 +100,9 @@
                     <div id="intro-section">
                         <div id="intro">
                             <p class="top-p">Hey! This is Jacqueline.</p>
-                            <p>I'm a designer, amateur engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC CS Games</a> grad (fight on!) based in the San Francisco Bay Area.</p>
+                            <p>I'm a product + graphic designer, amateur engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC CS Games</a> grad (fight on!) based in the San Francisco Bay Area.</p>
                             <p>I’m excited by tackling hard, technical problems with great people to make our world a better place, and so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon. Previously, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> working on dev tooling and AI.</p>
-                            <p>Outside of work, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student. Right now, I’m also learning more about frontend and building on the web. You can read my design engineering field notes <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing.</p>
+                            <p>Outside of work, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student. Right now, I’m learning the technical details behind the web. You can read my field notes <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing.</p>
                             <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
                         </div>
                         <nav id="nav">
@@ -138,9 +146,8 @@
                     <div
                         class="floating-item"
                         style:--card-w="{cardbingo.width}rem"
-                        style:transform="translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)"
+                        style:transform="translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)" use:draggable={cardbingo}
                     >
-                    <!-- use:draggable={cardbingo} removed -->
                         <div class="example-card">
                             <img src="/projects/bingo/stamp.png" alt="xcode" draggable="false">
                             <!-- <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span> -->
@@ -150,9 +157,8 @@
                     <div
                         class="floating-item"
                         style:--card-w="{cardxcode.width}rem"
-                        style:transform="translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)"
+                        style:transform="translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)" use:draggable={cardxcode}
                     >
-                    <!-- use:draggable={cardxcode} removed -->
                         <div class="example-card">
                             <img src="/projects/xcode/stamp.png" alt="xcode" draggable="false">
                             <!-- <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span> -->
@@ -162,9 +168,8 @@
                     <div
                         class="floating-item"
                         style:--card-w="{cardrabbit.width}rem"
-                        style:transform="translate3d({cardrabbit.x}px, {cardrabbit.y}px, 0) rotate({cardrabbit.rotation}deg)"
+                        style:transform="translate3d({cardrabbit.x}px, {cardrabbit.y}px, 0) rotate({cardrabbit.rotation}deg)" use:draggable={cardrabbit}
                     >
-                    <!-- use:draggable={cardrabbit} removed -->
                         <div class="example-card">
                             <img src="/projects/rabbitholing/stamp.png" alt="xcode" draggable="false">
                             <!-- <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span> -->
@@ -456,9 +461,9 @@
         position: absolute;      /* lifts out of flow; positioned from the stage */
         top: 0;
         left: 0;                 /* origin = stage top-left; transform does the moving */
-        /* cursor: grab; */
-        /* touch-action: none; */
-        /* user-select: none; */
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
         padding: 0;
         margin: 0;
         
