@@ -1,11 +1,33 @@
 <script>
     import { resolve } from '$app/paths';
-    
-    let cardbingo = $state({ x: 50, y: 170, rotation: -2, width: 12 });
-    let cardxcode = $state({ x: 265, y: 235, rotation: 0, width: 16 });
-    let cardrabbit = $state({ x: 260, y: 60, rotation: 3, width: 14 });
+    import { goto } from '$app/navigation';
 
+    let cardbingo = $state({
+        x: 50, y: 170, rotation: -2, width: 12,
+        href: '/work/bingo',
+        title: 'photo bingo',
+        desc: 'One-line blurb shown on hover.'
+    });
+
+    let cardxcode = $state({
+        x: 265, y: 235, rotation: 0, width: 16,
+        href: '/work/xcode',
+        title: 'xcode',
+        desc: 'One-line blurb shown on hover.'
+    });
+
+    let cardrabbit = $state({
+        x: 260, y: 60, rotation: 3, width: 14,
+        href: '/work/rabbitholing',
+        title: 'rabbitholing',
+        desc: 'One-line blurb shown on hover.'
+    });
+
+    let dropZone;
     
+    // let cardbingo = $state({ x: 50, y: 170, rotation: -2, width: 12 });
+    // let cardxcode = $state({ x: 265, y: 235, rotation: 0, width: 16 });
+    // let cardrabbit = $state({ x: 260, y: 60, rotation: 3, width: 14 });
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
@@ -31,6 +53,10 @@
         node.releasePointerCapture(event.pointerId);
         node.removeEventListener('pointermove', onPointerMove);
         node.removeEventListener('pointerup', onPointerUp);
+
+        if (isOverDropZone(node)) {
+            goto(resolve(pos.href));   // landed on the box → open project
+        }
     }
 
         node.addEventListener('pointerdown', onPointerDown);
@@ -40,6 +66,16 @@
             node.removeEventListener('pointerdown', onPointerDown);
         }
     };
+
+    function isOverDropZone(node) {
+        if (!dropZone) return false;
+        const stamp = node.getBoundingClientRect();
+        const box   = dropZone.getBoundingClientRect();
+        const cx = stamp.left + stamp.width / 2;   // stamp's center point
+        const cy = stamp.top  + stamp.height / 2;
+        return cx >= box.left && cx <= box.right &&
+                cy >= box.top  && cy <= box.bottom;
+    }
 
 
 }
@@ -92,7 +128,8 @@
                             <div class="line-media-container"></div>
                         </div>
                         <div class="env-right">
-                            <div class="stamp-div">
+                            <div class="stamp-div" bind:this={dropZone}>
+                                <!-- bind:this hands you that node after render -->
                                 <p class="stamp-text">Place<br>Stamp<br>Here</p>
                             </div>
                         </div>
