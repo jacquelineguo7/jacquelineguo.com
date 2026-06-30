@@ -3,6 +3,10 @@
     import { goto } from '$app/navigation';
 
     let moved;
+    let stage;
+    let maxX;
+    let maxY;
+
     let topZ = 3;                   // highest z-index handed out so far
     let dragging = $state(false);   // true while a stamp is mid-drag
     let overZone = $state(false);   // true when the dragged stamp is over the box
@@ -29,15 +33,14 @@
     });
 
     let dropZone;
-    
-    // let cardbingo = $state({ x: 50, y: 170, rotation: -2, width: 12 });
-    // let cardxcode = $state({ x: 265, y: 235, rotation: 0, width: 16 });
-    // let cardrabbit = $state({ x: 260, y: 60, rotation: 3, width: 14 });
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
 
     function onPointerDown(event) {
+        maxX = stage.clientWidth  - node.offsetWidth;
+        maxY = stage.clientHeight - node.offsetHeight;
+
         moved = false;
         pos.z = ++topZ;           // clicked/grabbed stamp jumps to the front
 
@@ -55,6 +58,10 @@
         // new position = original position + how far the pointer moved
         pos.x = originX + (event.clientX - startX);
         pos.y = originY + (event.clientY - startY);
+
+        const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+        pos.x = clamp(pos.x, 0, maxX);
+        pos.y = clamp(pos.y, 0, maxY);
 
         if (Math.hypot(event.clientX - startX, event.clientY - startY) > 4) {
             moved = true; // drag, not click
@@ -138,7 +145,7 @@
                 </div>
             </div>
             <div class="col" id="right-col">
-                <div id="selected-work">
+                <div id="selected-work" bind:this={stage}>
                     <div class="envelope-decor">
                         <div class="env-left">
                             <h2 id="feature">Featured Work</h2>
