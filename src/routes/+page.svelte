@@ -448,6 +448,7 @@
     }
 
     .stamp-div {
+        color: var(--light--blue);
         display: flex;
         width: 10rem;
         height: 8rem;
@@ -462,14 +463,14 @@
 
     /* a stamp is being dragged somewhere on the stage → hint the target */
     .stamp-div.dragging {
-        border-color: var(--primary--blue);
+        border: 0.3rem double var(--tertiary--blue);
     }
 
     /* the dragged stamp is over the box → ready to drop */
     .stamp-div.over {
-        border-color: var(--primary--blue);
+        border: 0.3rem double var(--tertiary--blue);
         background-color: var(--hover--blue);
-        transform: scale(1.04);
+        transform: scale(1.06);
     }
 
     .stamp-div p {
