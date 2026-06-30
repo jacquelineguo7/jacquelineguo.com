@@ -13,6 +13,23 @@
     let dragging = $state(false);   // true while a stamp is mid-drag
     let overZone = $state(false);   // true when the dragged stamp is over the box
 
+    /* ─────────────────────────────────────────────────────────────
+       PLACED-STATE INTERACTION — features to build (see step-by-step)
+       F1  placed         : which card is staged in the box (null = default)
+       F2  enter placed   : in endDrag(), set `placed` instead of goto()
+       F3  card data      : add `media` img + `address` per card (F9 = geo)
+       F4  swap content   : pc-left shows title/desc/media when placed
+       F5  snap to box    : selected stamp animates into pc-right slot
+       F6  corner cluster : other stamps bunch into bottom-left
+       F7  go back        : corner = back hit-area (hover-scale) + ←BACK + Esc
+       F8  let's go       : button → navigation (the old goto lives here now)
+       F9  geolocation    : (stretch) fill TO: from visitor IP location
+       F10 transitions    : fade/slide choreography between the two states
+       ───────────────────────────────────────────────────────────── */
+    // TODO F1: let placed = $state(null);
+
+    // TODO F3: give each card a `media` image (the gray preview box) and
+    //          optional `address` lines for the TO: block.
     let cardbingo = $state({
         x: 50, y: 170, rotation: -2, width: 12, z: 1,
         href: '/work/bingo',
@@ -33,6 +50,13 @@
         title: 'rabbitholing',
         desc: 'One-line blurb shown on hover.'
     });
+
+    // TODO F7/F8: component actions (not inside the draggable action below)
+    //   goBack()  → placed = null;  (also bind to Escape keydown + corner click)
+    //   mail()    → goto(resolve(placed.href));  (the LET'S GO button)
+    // TODO F9 (stretch): on mount, fetch visitor city/region/country from an IP
+    //   geolocation API and fill the TO: lines; fall back to the static playful
+    //   copy if it fails. If the site is statically hosted, do this client-side.
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
@@ -57,6 +81,10 @@
         overZone = false;
 
         if (moved && isOverDropZone(node)) {
+            // TODO F2: enter placed state instead of navigating —
+            //          set `placed = pos`, snap this stamp into the box (F5),
+            //          bunch the others into the corner (F6).
+            //          The goto() below moves to the LET'S GO button (F8).
             goto(resolve(pos.href));
         }
     }   
@@ -176,17 +204,34 @@
                     <div id="selected-work" bind:this={stage}>
                         <div class="postcard-decor">
                             <div class="pc-left">
+                                <!-- TODO F4: swap on placed state (use Svelte transition: for the fade, F10)
+                                     {#if placed}  project title + desc + media (the gray box) from `placed`
+                                     {:else}       "Featured Work" + ruled lines (current)            -->
                                 <h2 id="feature">Featured Work</h2>
                                 <div class="line-media-container"></div>
                             </div>
                             <div class="pc-right">
+                                <!-- TODO F5: when placed, the chosen stamp snaps INTO this box
+                                     (animate position + rotation + scale to fit). Start with
+                                     jump-and-settle; upgrade to continuous/FLIP later if it feels cheap. -->
                                 <div class="stamp-div" class:dragging class:over={overZone} bind:this={dropZone}>
                                     <!-- bind:this hands you that node after render -->
                                     <p class="stamp-text">Place<br>Stamp<br>Here</p>
                                 </div>
                             </div>
+                            <!-- TODO F3/F9: add the TO: address block on the right half.
+                                 Empty/decorative by default; filled when placed (playful copy,
+                                 or visitor's real city/country via IP geolocation, F9). -->
                         </div>
 
+                        <!-- TODO F6: when placed, animate the two NON-selected stamps into a
+                             bunched cluster in the bottom-left corner; the selected one goes to
+                             the box (F5). Drive their x/y/rotation toward preset cluster targets.
+                             DECISION — back RESTORES, it does not reset: before moving anything,
+                             snapshot every card's x/y/rotation/z (the live values get overwritten
+                             here). For the selected card, snapshot its PRE-DRAG origin
+                             (originX/originY from onPointerDown), not the box — so back undoes the
+                             whole gesture. Snapshot z too, or the pile returns reshuffled. -->
                         <div
                             class="floating-item"
                             style:--card-w="{cardbingo.width}rem"
@@ -225,6 +270,18 @@
                                 <!-- <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span> -->
                             </div>
                         </div>
+
+                        <!-- TODO F7: render {#if placed} — a tinted "back" hit-area over the
+                             bottom-left corner where the stamps bunch. Click anywhere in it (or
+                             on a stamp) → goBack(). Scale the stamps a little on hover. Include a
+                             visible "← BACK" label so it reads as a control, not just a pile.
+                             goBack() RESTORES the snapshot taken in F6 (animate all three cards
+                             back to their saved x/y/rotation/z), then sets placed = null — so the
+                             arrangement the user left is preserved, not reset to defaults. -->
+
+                        <!-- TODO F8: render {#if placed} — the "LET'S GO →" button → mail()
+                             (the navigation). This is the deliberate "send" step. Focus it on
+                             enter so it's keyboard-reachable. -->
                     </div>
                 </div>
 
@@ -567,5 +624,14 @@
         width: 100%;         /* fill the card's width */
         height: auto;        /* height follows automatically → no distortion */
     }
+
+    /* ── TODO: styles for the placed state ───────────────────────────
+       F4  .placed layout : title / desc / media column on pc-left
+       F5  stamp-in-box    : sizing + transition for the snapped stamp
+       F6  .corner-cluster : bottom-left stack positions for idle stamps
+       F7  .back-area      : light-red tint hit-area + stamp hover-scale
+       F8  .lets-go / .back-btn : button styling (Whois/Hershey type)
+       F10 transitions     : reuse var(--duration-base)/var(--ease-out)
+       ──────────────────────────────────────────────────────────────── */
 
 </style>
