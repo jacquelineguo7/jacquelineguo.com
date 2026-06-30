@@ -3,23 +3,26 @@
     import { goto } from '$app/navigation';
 
     let moved;
+    let topZ = 3;                   // highest z-index handed out so far
+    let dragging = $state(false);   // true while a stamp is mid-drag
+    let overZone = $state(false);   // true when the dragged stamp is over the box
 
     let cardbingo = $state({
-        x: 50, y: 170, rotation: -2, width: 12,
+        x: 50, y: 170, rotation: -2, width: 12, z: 1,
         href: '/work/bingo',
         title: 'photo bingo',
         desc: 'One-line blurb shown on hover.'
     });
 
     let cardxcode = $state({
-        x: 265, y: 235, rotation: 0, width: 16,
+        x: 265, y: 235, rotation: 0, width: 16, z: 2,
         href: '/work/xcode',
         title: 'xcode',
         desc: 'One-line blurb shown on hover.'
     });
 
     let cardrabbit = $state({
-        x: 260, y: 60, rotation: 3, width: 14,
+        x: 260, y: 60, rotation: 3, width: 14, z: 3,
         href: '/work/rabbitholing',
         title: 'rabbitholing',
         desc: 'One-line blurb shown on hover.'
@@ -36,6 +39,7 @@
 
     function onPointerDown(event) {
         moved = false;
+        pos.z = ++topZ;           // clicked/grabbed stamp jumps to the front
 
         event.preventDefault();   // stops native image-drag + text selection
         startX = event.clientX;            // where the pointer grabbed
@@ -54,13 +58,18 @@
 
         if (Math.hypot(event.clientX - startX, event.clientY - startY) > 4) {
             moved = true; // drag, not click
+            dragging = true;
         }
+        if (dragging) overZone = isOverDropZone(node);
     }
 
     function onPointerUp(event) {
         node.releasePointerCapture(event.pointerId);
         node.removeEventListener('pointermove', onPointerMove);
         node.removeEventListener('pointerup', onPointerUp);
+
+        dragging = false;
+        overZone = false;
 
         if (moved && isOverDropZone(node)) {
             goto(resolve(pos.href));   // landed on the box → open project
@@ -136,7 +145,7 @@
                             <div class="line-media-container"></div>
                         </div>
                         <div class="env-right">
-                            <div class="stamp-div" bind:this={dropZone}>
+                            <div class="stamp-div" class:dragging class:over={overZone} bind:this={dropZone}>
                                 <!-- bind:this hands you that node after render -->
                                 <p class="stamp-text">Place<br>Stamp<br>Here</p>
                             </div>
@@ -146,7 +155,9 @@
                     <div
                         class="floating-item"
                         style:--card-w="{cardbingo.width}rem"
-                        style:transform="translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)" use:draggable={cardbingo}
+                        style:transform="translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)"
+                        style:z-index={cardbingo.z}
+                        use:draggable={cardbingo}
                     >
                         <div class="example-card">
                             <img src="/projects/bingo/stamp.png" alt="xcode" draggable="false">
@@ -157,7 +168,9 @@
                     <div
                         class="floating-item"
                         style:--card-w="{cardxcode.width}rem"
-                        style:transform="translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)" use:draggable={cardxcode}
+                        style:transform="translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)"
+                        style:z-index={cardxcode.z}
+                        use:draggable={cardxcode}
                     >
                         <div class="example-card">
                             <img src="/projects/xcode/stamp.png" alt="xcode" draggable="false">
@@ -168,7 +181,9 @@
                     <div
                         class="floating-item"
                         style:--card-w="{cardrabbit.width}rem"
-                        style:transform="translate3d({cardrabbit.x}px, {cardrabbit.y}px, 0) rotate({cardrabbit.rotation}deg)" use:draggable={cardrabbit}
+                        style:transform="translate3d({cardrabbit.x}px, {cardrabbit.y}px, 0) rotate({cardrabbit.rotation}deg)"
+                        style:z-index={cardrabbit.z}
+                        use:draggable={cardrabbit}
                     >
                         <div class="example-card">
                             <img src="/projects/rabbitholing/stamp.png" alt="xcode" draggable="false">
@@ -432,13 +447,29 @@
         justify-content: end;
     }
 
-    .stamp-div {   
+    .stamp-div {
         display: flex;
         width: 10rem;
         height: 8rem;
         border: 0.3rem double var(--light--blue);
         justify-content: center;
         align-items: center;
+        transition:
+            border-color var(--duration-base) var(--ease-out),
+            background-color var(--duration-base) var(--ease-out),
+            transform var(--duration-base) var(--ease-out);
+    }
+
+    /* a stamp is being dragged somewhere on the stage → hint the target */
+    .stamp-div.dragging {
+        border-color: var(--primary--blue);
+    }
+
+    /* the dragged stamp is over the box → ready to drop */
+    .stamp-div.over {
+        border-color: var(--primary--blue);
+        background-color: var(--hover--blue);
+        transform: scale(1.04);
     }
 
     .stamp-div p {
