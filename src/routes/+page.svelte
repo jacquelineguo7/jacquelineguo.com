@@ -6,6 +6,8 @@
     let stage;
     let maxX;
     let maxY;
+    let dropZone;
+    let startX, startY, originX, originY;
 
     let topZ = 3;                   // highest z-index handed out so far
     let dragging = $state(false);   // true while a stamp is mid-drag
@@ -32,10 +34,32 @@
         desc: 'One-line blurb shown on hover.'
     });
 
-    let dropZone;
-
     function draggable(node, pos) {
     let startX, startY, originX, originY;
+
+    function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    function endDrag(event) {
+        node.removeEventListener('pointermove', onPointerMove);
+        node.removeEventListener('pointerup', endDrag);
+        node.removeEventListener('pointercancel', endDrag);
+
+        if (node.hasPointerCapture(event.pointerId)) {
+            node.releasePointerCapture(event.pointerId);
+        }
+
+        pos.x = clamp(pos.x, 0, maxX);
+        pos.y = clamp(pos.y, 0, maxY);
+
+        dragging = false;
+        overZone = false;
+
+        if (moved && isOverDropZone(node)) {
+            goto(resolve(pos.href));
+        }
+    }   
 
     function onPointerDown(event) {
         maxX = stage.clientWidth  - node.offsetWidth;
@@ -51,17 +75,21 @@
         originY = pos.y;
         node.setPointerCapture(event.pointerId);
         node.addEventListener('pointermove', onPointerMove);
-        node.addEventListener('pointerup', onPointerUp);
+        node.addEventListener('pointerup', endDrag);
+        node.addEventListener('pointercancel', endDrag);
     }
 
     function onPointerMove(event) {
+        if (event.pointerType === 'mouse' && event.buttons === 0) {
+            endDrag(event);
+            return;
+        }
         // new position = original position + how far the pointer moved
         pos.x = originX + (event.clientX - startX);
         pos.y = originY + (event.clientY - startY);
 
-        const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
-        pos.x = clamp(pos.x, 0, maxX);
-        pos.y = clamp(pos.y, 0, maxY);
+        pos.x = rubber(pos.x, 0, maxX);
+        pos.y = rubber(pos.y, 0, maxY);
 
         if (Math.hypot(event.clientX - startX, event.clientY - startY) > 4) {
             moved = true; // drag, not click
@@ -70,20 +98,7 @@
         if (dragging) overZone = isOverDropZone(node);
     }
 
-    function onPointerUp(event) {
-        node.releasePointerCapture(event.pointerId);
-        node.removeEventListener('pointermove', onPointerMove);
-        node.removeEventListener('pointerup', onPointerUp);
-
-        dragging = false;
-        overZone = false;
-
-        if (moved && isOverDropZone(node)) {
-            goto(resolve(pos.href));   // landed on the box → open project
-        }
-    }
-
-        node.addEventListener('pointerdown', onPointerDown);
+    node.addEventListener('pointerdown', onPointerDown);
 
     return {
         destroy() {
@@ -99,6 +114,17 @@
         const cy = stamp.top  + stamp.height / 2;
         return cx >= box.left && cx <= box.right &&
                 cy >= box.top  && cy <= box.bottom;
+    }
+
+    function rubber(value, min, max) {
+        const give = 30; // how far past the edge it can stretch, px
+        if (value < min) return min - resist(min - value, give);
+        if (value > max) return max + resist(value - max, give);
+        return value;
+    }
+    // overshoot grows, but the return value asymptotes toward `give`
+    function resist(overshoot, give) {
+        return (1 - 1 / (overshoot / give + 1)) * give;
     }
 
 
@@ -432,7 +458,7 @@
         background-color: #D7DDE2;
         height: 60vh;          /* gives the flap's % height something to resolve against */
         position: relative;
-        padding: 3rem;
+        padding: 2rem;
     }
 
     #envelope-flap {
@@ -491,6 +517,7 @@
     /* a stamp is being dragged somewhere on the stage → hint the target */
     .stamp-div.dragging {
         border: 0.3rem double var(--tertiary--blue);
+        background-color: var(--hover--blue);
     }
 
     /* the dragged stamp is over the box → ready to drop */
