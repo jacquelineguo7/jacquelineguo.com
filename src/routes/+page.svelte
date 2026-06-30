@@ -27,6 +27,7 @@
        F10 transitions    : fade/slide choreography between the two states
        ───────────────────────────────────────────────────────────── */
     // TODO F1: let placed = $state(null);
+    let placed = $state(null);
 
     // TODO F3: give each card a `media` image (the gray preview box) and
     //          optional `address` lines for the TO: block.
@@ -34,21 +35,24 @@
         x: 50, y: 170, rotation: -2, width: 12, z: 1,
         href: '/work/bingo',
         title: 'photo bingo',
-        desc: 'One-line blurb shown on hover.'
+        desc: 'One-line blurb shown on hover.',
+        media: ''
     });
 
     let cardxcode = $state({
         x: 265, y: 235, rotation: 0, width: 16, z: 2,
         href: '/work/xcode',
         title: 'xcode',
-        desc: 'One-line blurb shown on hover.'
+        desc: 'One-line blurb shown on hover.',
+        media: ''
     });
 
     let cardrabbit = $state({
         x: 260, y: 60, rotation: 3, width: 14, z: 3,
         href: '/work/rabbitholing',
         title: 'rabbitholing',
-        desc: 'One-line blurb shown on hover.'
+        desc: 'One-line blurb shown on hover.',
+        media: ''
     });
 
     // TODO F7/F8: component actions (not inside the draggable action below)
@@ -81,6 +85,9 @@
         overZone = false;
 
         if (moved && isOverDropZone(node)) {
+            
+            placed = pos;
+            
             // TODO F2: enter placed state instead of navigating —
             //          set `placed = pos`, snap this stamp into the box (F5),
             //          bunch the others into the corner (F6).
@@ -218,6 +225,13 @@
                                     <!-- bind:this hands you that node after render -->
                                     <p class="stamp-text">Place<br>Stamp<br>Here</p>
                                 </div>
+                            </div>
+                            <div id="address-block">
+                                <p class="pc-text">To:</p>
+                                <p class="pc-text">Dear Internet User</p>
+                                <p class="pc-text">United States</p>
+                                <p class="pc-text">World Wide Web, Earth</p>
+                                
                             </div>
                             <!-- TODO F3/F9: add the TO: address block on the right half.
                                  Empty/decorative by default; filled when placed (playful copy,
@@ -547,12 +561,14 @@
     }
 
     .pc-left {
+        flex: 1;
         width: 12rem;
         display: flex;
         flex-direction: column;
     }
 
     .pc-right {
+        flex: 1;
         display: flex;
         justify-content: end;
     }
