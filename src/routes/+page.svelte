@@ -14,6 +14,14 @@
     let dragging = $state(false);   // true while a stamp is mid-drag
     let overZone = $state(false);   // true when the dragged stamp is over the box
 
+    // drag physics (tuned in the playground)
+    const GRAB_SCALE = 1.04;        // scale-up when a stamp is grabbed
+    const FRICTION = 0.85;          // velocity decay per frame during the float
+    const BOUNCE = 0.35;            // energy kept when the float hits a wall
+    const VEL_CARRY = 0.3;          // how much throw speed carries into the float
+    const DROP_THRESHOLD = 0.40;    // overlap fraction needed to count as "over the box"
+    const MOVE_THRESHOLD = 8;       // px of pointer travel before a click counts as a drag
+
     /* ─────────────────────────────────────────────────────────────
        PLACED-STATE INTERACTION — features to build (see step-by-step)
        -- F1  placed         : which card is staged in the box (null = default)
@@ -31,7 +39,7 @@
     let placed = $state(null);
 
     let cardbingo = $state({
-        x: 50, y: 170, rotation: -2, width: 11, z: 1,
+        x: 32, y: 100, rotation: -2, width: 11, z: 1,
         href: '/work/bingo',
         title: 'photo bingo',
         desc: 'Creating a 10x bingo experience for groups using playful visual and interaction design.',
@@ -39,7 +47,7 @@
     });
 
     let cardxcode = $state({
-        x: 265, y: 235, rotation: 0, width: 15, z: 2,
+        x: 185, y: 195, rotation: 0, width: 15, z: 2,
         href: '/work/xcode',
         title: 'xcode',
         desc: 'Reimagining the new project experience and building with AI in Xcode.',
@@ -47,10 +55,10 @@
     });
 
     let cardrabbit = $state({
-        x: 260, y: 60, rotation: 3, width: 13, z: 3,
+        x: 210, y: 30, rotation: 3, width: 13, z: 3,
         href: '/work/rabbitholing',
         title: 'rabbitholing',
-        desc: 'Rabbithole with LLMs by interacting with your chat queries as a knowledge graph.',
+        desc: 'Rabbithole with LLMs by interacting with your chat queries in the form of a knowledge graph.',
         media: ''
     });
 
@@ -81,6 +89,14 @@
         return slots.slice(0, n);
     }
 
+    // which corner slot a given card occupies (matches othersToCorner's assignment)
+    function cornerSlotFor(card) {
+        if (!placed) return null;
+        const others = cards.filter(c => c.href !== placed.href);
+        const i = others.findIndex(c => c.href === card.href);
+        return i < 0 ? null : cornerSlots(others.length)[i];
+    }
+
     // centers a stamp inside the drop-zone box
     function boxSlotFor(node) {
         const box   = dropZone.getBoundingClientRect();
@@ -103,6 +119,10 @@
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
+    let lastTap = 0;   // timestamp of the last tap on this stamp, for double-tap detection
+    const card = node.querySelector('.example-card');   // inner element that carries the grab-scale
+    let samples = [];      // recent pointer positions, for computing throw velocity
+    let floatRaf = null;   // active momentum-float animation frame (if any)
 
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
@@ -121,8 +141,65 @@
             .forEach(c => { const h = homes[c.href]; c.x = h.x; c.y = h.y; c.rotation = h.rotation; });
     }
 
+    // true on the 2nd tap of a double-tap; always records this tap for next time
+    function checkDoubleTap(event) {
+        const isDouble = event.timeStamp - lastTap < 300;
+        lastTap = isDouble ? 0 : event.timeStamp;
+        return isDouble;
+    }
+
+    // drop this stamp into the box, centered, and clear the others (F5 + F6)
+    function placeInBox() {
+        const slot = boxSlotFor(node);
+        pos.x = slot.x;
+        pos.y = slot.y;
+        pos.rotation = -3;
+        othersToCorner();
+        placed = pos;
+    }
+
+    // momentum: keep drifting after release, bleeding off with friction + edge-bounce
+    function startFloat(vx, vy) {
+        node.style.transition = 'none';   // rAF drives the position, not CSS easing
+        function step() {
+            vx *= FRICTION; vy *= FRICTION;
+            pos.x += vx;    pos.y += vy;
+            if (pos.x < 0)    { pos.x = 0;    vx = -vx * BOUNCE; }
+            if (pos.x > maxX) { pos.x = maxX; vx = -vx * BOUNCE; }
+            if (pos.y < 0)    { pos.y = 0;    vy = -vy * BOUNCE; }
+            if (pos.y > maxY) { pos.y = maxY; vy = -vy * BOUNCE; }
+            if (Math.hypot(vx, vy) > 0.4) {
+                floatRaf = requestAnimationFrame(step);
+            } else {
+                floatRaf = null;
+                node.style.transition = '';   // restore for the next snap
+                homes[pos.href] = { x: pos.x, y: pos.y, rotation: pos.rotation };
+            }
+        }
+        floatRaf = requestAnimationFrame(step);
+    }
+
+    // fling with momentum if thrown, otherwise clamp into frame — and record the new home
+    function flingOrLand() {
+        const a = samples[0], b = samples[samples.length - 1];
+        let vx = 0, vy = 0;
+        if (a && b && b.t > a.t) {
+            const dt = Math.max(8, b.t - a.t);
+            vx = (b.x - a.x) / dt * 16 * VEL_CARRY;
+            vy = (b.y - a.y) / dt * 16 * VEL_CARRY;
+        }
+        if (Math.hypot(vx, vy) > 0.4) {
+            startFloat(vx, vy);
+        } else {
+            pos.x = clamp(pos.x, 0, maxX);
+            pos.y = clamp(pos.y, 0, maxY);
+            homes[pos.href] = { x: pos.x, y: pos.y, rotation: pos.rotation };
+        }
+    }
+
     function endDrag(event) {
-        node.style.transition = '';   // ← add: restore CSS transition for the snap
+        node.style.transition = '';            // restore CSS transition for the snap
+        if (card) card.style.transform = '';   // scale the stamp back down
         node.removeEventListener('pointermove', onPointerMove);
         node.removeEventListener('pointerup', endDrag);
         node.removeEventListener('pointercancel', endDrag);
@@ -131,46 +208,51 @@
             node.releasePointerCapture(event.pointerId);
         }
 
-        pos.x = clamp(pos.x, 0, maxX);
-        pos.y = clamp(pos.y, 0, maxY);
-
         dragging = false;
         overZone = false;
 
+        if (moved) lastTap = 0;   // a real drag breaks any pending double-tap sequence
+
         const droppedInBox = moved && isOverDropZone(node);
         const isPlacedStamp = placed && placed.href === pos.href;
+        const isCornerStamp = placed && !isPlacedStamp;   // a bunched (set-aside) stamp
 
         if (droppedInBox) {
-            const slot = boxSlotFor(node);
-            pos.x = slot.x;          // center it…
-            pos.y = slot.y;
-            pos.rotation = -3;       // …with a slight tilt
-            othersToCorner();        // clear the other stamps now, on drop
-            placed = pos;            // enter placed state (drives F4 content)
-            // goto(resolve(pos.href));   ← moves to the LET'S GO button (F8)
-        } else if (isPlacedStamp) {
-            // going back from the placed state
-            if (moved) {
-                // peeled it out and dropped it somewhere new → that's its new home
-                homes[pos.href] = { x: pos.x, y: pos.y, rotation: pos.rotation };
-                placed = null;
-                othersRestore();     // bring the bunched ones home; this one stays put
+            placeInBox();                        // drag onto the box → place / replace
+        } else if (isCornerStamp) {
+            if (!moved && checkDoubleTap(event)) {
+                placeInBox();                    // corner stamp double-tapped → swap in
             } else {
-                goBack();            // simple click → every stamp returns home
+                // corner stamp NOT dropped on the box → always return to its slot,
+                // whether it was a drag elsewhere or just a (jittery) click
+                const slot = cornerSlotFor(pos);
+                if (slot) { pos.x = slot.x; pos.y = slot.y; pos.rotation = slot.rot; }
             }
-        } else {
-            // a normal stamp dropped outside the box
-            if (moved) homes[pos.href] = { x: pos.x, y: pos.y, rotation: pos.rotation };
-            othersRestore();
+        } else if (isPlacedStamp) {
+            if (moved) {
+                // peeled the placed stamp out → un-place, bring the pile home, this one lands
+                placed = null;
+                othersRestore();
+                flingOrLand();
+            } else {
+                goBack();                        // single click on the placed stamp → release
+            }
+        } else if (moved) {
+            flingOrLand();                       // a free stamp dragged/flung → land where dropped
+        } else if (checkDoubleTap(event)) {
+            placeInBox();                        // free stamp double-tapped → place
         }
     }
 
     function onPointerDown(event) {
-        node.style.transition = 'none';    // ← add this: no smoothing while dragging
+        if (floatRaf) { cancelAnimationFrame(floatRaf); floatRaf = null; }   // stop any in-flight float
+        node.style.transition = 'none';    // no smoothing while dragging
+        if (card) card.style.transform = `scale(${GRAB_SCALE})`;   // grab-scale up
         maxX = stage.clientWidth  - node.offsetWidth;
         maxY = stage.clientHeight - node.offsetHeight;
 
         moved = false;
+        samples = [];             // fresh velocity samples for this drag
         pos.z = ++topZ;           // clicked/grabbed stamp jumps to the front
 
         event.preventDefault();   // stops native image-drag + text selection
@@ -189,19 +271,25 @@
             endDrag(event);
             return;
         }
-        // new position = original position + how far the pointer moved
-        pos.x = originX + (event.clientX - startX);
-        pos.y = originY + (event.clientY - startY);
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
 
-        pos.x = rubber(pos.x, 0, maxX);
-        pos.y = rubber(pos.y, 0, maxY);
-
-        if (Math.hypot(event.clientX - startX, event.clientY - startY) > 4) {
+        if (!moved) {
+            // still inside the click-jitter tolerance — don't move the stamp yet
+            if (Math.hypot(dx, dy) <= MOVE_THRESHOLD) return;
             moved = true; // drag, not click
             dragging = true;
         }
+
+        // new position = original position + how far the pointer moved
+        pos.x = rubber(originX + dx, 0, maxX);
+        pos.y = rubber(originY + dy, 0, maxY);
+
+        samples.push({ x: event.clientX, y: event.clientY, t: event.timeStamp });
+        if (samples.length > 5) samples.shift();
+
         // stamps now clear on DROP, not on hover — here we only light up the box
-        if (dragging) overZone = isOverDropZone(node);
+        overZone = isOverDropZone(node);
     }
 
     node.addEventListener('pointerdown', onPointerDown);
@@ -214,12 +302,13 @@
 
     function isOverDropZone(node) {
         if (!dropZone) return false;
-        const stamp = node.getBoundingClientRect();
-        const box   = dropZone.getBoundingClientRect();
-        const cx = stamp.left + stamp.width / 2;   // stamp's center point
-        const cy = stamp.top  + stamp.height / 2;
-        return cx >= box.left && cx <= box.right &&
-                cy >= box.top  && cy <= box.bottom;
+        const s = node.getBoundingClientRect();
+        const b = dropZone.getBoundingClientRect();
+        const ix = Math.max(0, Math.min(s.right, b.right) - Math.max(s.left, b.left));
+        const iy = Math.max(0, Math.min(s.bottom, b.bottom) - Math.max(s.top, b.top));
+        // fraction of the SMALLER shape that's covered — robust whether stamp or box is bigger
+        const overlap = (ix * iy) / Math.min(s.width * s.height, b.width * b.height);
+        return overlap >= DROP_THRESHOLD;
     }
 
     function rubber(value, min, max) {
@@ -283,20 +372,19 @@
                         <div class="postcard-decor">
                             <div class="pc-left">
                                 {#if placed}
-                                    <h2 class="work-title" in:fade={{ duration: 280 }}>{placed.title}</h2>
-                                    <p class="work-desc" in:fade={{ duration: 280 }}>{placed.desc}</p>
-                                    <img class="work-media" in:fade={{ duration: 280 }} src={placed.media} alt="{placed.desc}">
+                                    <h2 class="work-title" in:fade={{ duration: 60 }}>{placed.title}</h2>
+                                    <p class="work-desc" in:fade={{ duration: 60 }}>{placed.desc}</p>
+                                    <img class="work-media" in:fade={{ duration: 60 }} src={placed.media} alt="{placed.desc}">
                                 {:else}
-                                    <h2 class="work-title" in:fade={{ duration: 280 }}>Featured Work</h2>
+                                    <h2 class="work-title" in:fade={{ duration: 60 }}>Featured Work</h2>
                                 {/if}
                             </div>
                             <div class="pc-right">
-                                <!-- TODO F5: when placed, the chosen stamp snaps INTO this box
-                                     (animate position + rotation + scale to fit). Start with
-                                     jump-and-settle; upgrade to continuous/FLIP later if it feels cheap. -->
-                                <div class="stamp-div" class:dragging class:over={overZone} bind:this={dropZone}>
-                                    <!-- bind:this hands you that node after render -->
-                                    <p class="stamp-text">Place<br>Stamp<br>Here</p>
+                                <div class="right-flush-div">
+                                    <div class="stamp-div" class:dragging class:over={overZone} bind:this={dropZone}>
+                                        <!-- bind:this hands you that node after render -->
+                                        <p class="stamp-text">Place<br>Stamp<br>Here</p>
+                                    </div>
                                 </div>
 
                                 <div class="address">
@@ -332,7 +420,7 @@
                         >
                             <div class="example-card">
                                 <img src="/projects/bingo/stamp.png" alt="xcode" draggable="false">
-                                <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span>
+                                <!-- <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span> -->
                             </div>
                         </div>
 
@@ -345,7 +433,7 @@
                         >
                             <div class="example-card">
                                 <img src="/projects/xcode/stamp.png" alt="xcode" draggable="false">
-                                <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span>
+                                <!-- <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span> -->
                             </div>
                         </div>
 
@@ -358,7 +446,7 @@
                         >
                             <div class="example-card">
                                 <img src="/projects/rabbitholing/stamp.png" alt="xcode" draggable="false">
-                                <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span>
+                                <!-- <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span> -->
                             </div>
                         </div>
 
@@ -716,6 +804,8 @@
 
     .example-card {
         width: var(--card-w, 13rem);
+        transition: transform 150ms ease-out;   /* grab-scale animation */
+        transform-origin: center;
     }
 
     .example-card img {
@@ -739,6 +829,11 @@
         letter-spacing: 0.03rem;
         
 
+    }
+
+    .right-flush-div {
+        display: flex;
+        justify-content: end;
     }
 
     /* ── TODO: styles for the placed state ───────────────────────────
