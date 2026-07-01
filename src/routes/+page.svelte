@@ -53,9 +53,29 @@
         media: ''
     });
 
-    
+    const cards = [cardbingo, cardxcode, cardrabbit];
 
-    let addressLines = $derived(placed ? placed.address : ['', '', '']); 
+    // where the bunched stamps sit, bottom-left of the stage
+    function cornerSlots(n) {
+        const H = stage.clientHeight;
+        const slots = [
+            { x: 24,  y: H - 50, rot: -8 },
+            { x: 108,  y: H - 55, rot:   10 },
+        ];
+        return slots.slice(0, n);
+    }
+
+    // centers a stamp inside the drop-zone box
+    function boxSlotFor(node) {
+        const box   = dropZone.getBoundingClientRect();
+        const stageR = stage.getBoundingClientRect();
+        return {
+            x: (box.left - stageR.left) + (box.width  - node.offsetWidth)  / 2,
+            y: (box.top  - stageR.top)  + (box.height - node.offsetHeight) / 2,
+        };
+    }
+
+    let addressLines = $derived(placed ? placed.address : ['', '', '']);
     // $derived as a computed state (calculated from other reactive things)
 
     // TODO F7/F8: component actions (not inside the draggable action below)
@@ -67,12 +87,27 @@
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
+    let snapshot = null;   // saved home positions of the OTHER cards, this drag
 
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
     }
 
+    function othersToCorner() {
+        const others = cards.filter(c => c.href !== pos.href);   // everyone but me
+        snapshot = others.map(c => ({ card: c, x: c.x, y: c.y, rotation: c.rotation }));
+        const slots = cornerSlots(others.length);
+        others.forEach((c, i) => { c.x = slots[i].x; c.y = slots[i].y; c.rotation = slots[i].rot; });
+    }
+
+    function othersRestore() {
+        if (!snapshot) return;
+        snapshot.forEach(s => { s.card.x = s.x; s.card.y = s.y; s.card.rotation = s.rotation; });
+        snapshot = null;
+    }
+
     function endDrag(event) {
+        node.style.transition = '';   // ← add: restore CSS transition for the snap
         node.removeEventListener('pointermove', onPointerMove);
         node.removeEventListener('pointerup', endDrag);
         node.removeEventListener('pointercancel', endDrag);
@@ -85,21 +120,23 @@
         pos.y = clamp(pos.y, 0, maxY);
 
         dragging = false;
-        overZone = false;
-
         if (moved && isOverDropZone(node)) {
-            
-            placed = pos;
-            
-            // TODO F2: enter placed state instead of navigating —
-            //          set `placed = pos`, snap this stamp into the box (F5),
-            //          bunch the others into the corner (F6).
-            //          The goto() below moves to the LET'S GO button (F8).
-            // goto(resolve(pos.href));
+            const slot = boxSlotFor(node);
+            pos.x = slot.x;          // center it…
+            pos.y = slot.y;
+            pos.rotation = -3;       // …with a slight tilt
+            placed = pos;            // enter placed state (drives F4 content)
+            overZone = false;
+            // others stay bunched — snapshot kept for the ← BACK button (F7)
+            // goto(resolve(pos.href));   ← moves to the LET'S GO button (F8)
+        } else {
+            overZone = false;
+            othersRestore();         // didn't place → make sure the others are home
         }
     }   
 
     function onPointerDown(event) {
+        node.style.transition = 'none';    // ← add this: no smoothing while dragging
         maxX = stage.clientWidth  - node.offsetWidth;
         maxY = stage.clientHeight - node.offsetHeight;
 
@@ -133,7 +170,12 @@
             moved = true; // drag, not click
             dragging = true;
         }
-        if (dragging) overZone = isOverDropZone(node);
+        if (dragging) {
+            const nowOver = isOverDropZone(node);
+            if (nowOver && !overZone)      othersToCorner();   // just entered → clear them
+            else if (!nowOver && overZone) othersRestore();    // just left → bring them back
+            overZone = nowOver;
+        }
     }
 
     node.addEventListener('pointerdown', onPointerDown);
@@ -264,7 +306,7 @@
                         >
                             <div class="example-card">
                                 <img src="/projects/bingo/stamp.png" alt="xcode" draggable="false">
-                                <!-- <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span> -->
+                                <span class="coord-readout">{Math.round(cardbingo.x)}, {Math.round(cardbingo.y)}</span>
                             </div>
                         </div>
 
@@ -277,7 +319,7 @@
                         >
                             <div class="example-card">
                                 <img src="/projects/xcode/stamp.png" alt="xcode" draggable="false">
-                                <!-- <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span> -->
+                                <span class="coord-readout">{Math.round(cardxcode.x)}, {Math.round(cardxcode.y)}</span>
                             </div>
                         </div>
 
@@ -290,7 +332,7 @@
                         >
                             <div class="example-card">
                                 <img src="/projects/rabbitholing/stamp.png" alt="xcode" draggable="false">
-                                <!-- <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span> -->
+                                <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span>
                             </div>
                         </div>
 
@@ -634,7 +676,8 @@
         user-select: none;
         padding: 0;
         margin: 0;
-        
+        transition: transform 340ms cubic-bezier(.34, 1.56, .64, 1);
+        will-change: transform;
     }
     /* .floating-item:active {
         cursor: grabbing;
