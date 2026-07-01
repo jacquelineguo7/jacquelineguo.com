@@ -1,7 +1,7 @@
 <script>
     import { resolve } from '$app/paths';
     import { goto } from '$app/navigation';
-    import { fade } from 'svelte/transition';
+    import { fade, fly } from 'svelte/transition';
     import { onMount } from 'svelte';
 
     let moved;
@@ -32,6 +32,16 @@
        ───────────────────────────────────────────────────────────── */
     
     let placed = $state(null);
+
+    // swap animation matches the pc-left "Featured Work" ⇄ project title swap:
+    // 60ms, default (linear) easing, in-only — the outgoing element just vanishes.
+    const GO_SWAP_DURATION = 60;
+    const GO_SWAP_X = 16;   // px — "Go To Project" slides in from the >>>'s side
+
+    // ── THROWAWAY — background color is still up for grabs; pick one, copy the
+    // hex into .lets-go's background-color below, then delete this block + the
+    // <div class="tune-panel"> near the end of the markup. ──
+    let goBg = $state('#E8EEF2');          // matches --background--blue
 
     let cardbingo = $state({
         x: 32, y: 100, rotation: -2, width: 11, z: 1,
@@ -408,11 +418,11 @@
                                 </div>
 
                                 <div class="right-flush-div">
-                                    <div id="project-go-button">
+                                    <div id="project-go-button" style:--go-bg={goBg}>
                                         {#if placed}
-                                            <a class="lets-go" in:fade={{ duration: 60 }} href="{placed.href}">Go To Project &gt;&gt;&gt;</a>
+                                            <a class="lets-go" href="{placed.href}"><span class="lets-go-label" in:fade={{ x: GO_SWAP_X, duration: GO_SWAP_DURATION }}>Go To Project </span><span class="lets-go-arrow">&gt;&gt;&gt;</span></a>
                                         {:else}
-                                            <span class="lets-go-idle" aria-hidden="true">&gt;&gt;&gt;</span>
+                                            <span class="lets-go-idle" aria-hidden="true"><span class="lets-go-arrow">&gt;&gt;&gt;</span></span>
                                         {/if}
                                     </div>
                                 </div>
@@ -486,6 +496,17 @@
     </div>
 </div>
 
+{#if import.meta.env.DEV}
+    <!-- THROWAWAY — delete this panel + the goBg state once you've picked a
+         color you like. Doesn't render in production builds. -->
+    <div class="tune-panel">
+        <p class="tune-title">tune the "Go To Project" background</p>
+        <label>
+            background <span class="tune-value">{goBg}</span>
+            <input type="color" bind:value={goBg}>
+        </label>
+    </div>
+{/if}
 
 <style>
     :global(*) { box-sizing: border-box; }
@@ -703,7 +724,7 @@
         background-color: #D7DDE2;
         height: 60vh;          /* gives the flap's % height something to resolve against */
         position: relative;
-        padding: 2rem;
+        padding: 2rem 3rem 2rem 3rem;
         overflow: hidden;
         min-height: 50vh;
     }
@@ -883,15 +904,30 @@
 
     .lets-go {
         text-decoration: none;
+        /* hover transition (not the swap-in) — reuses the site-wide interactive timing */
         transition:
             color var(--duration-base) var(--ease-out),
-            transform var(--duration-base) var(--ease-out);
-        background-color: var(--background--blue);
+            background-color var(--duration-base) var(--ease-out);
+        /* TUNE: still deciding on this one — pick a hex, hardcode it here, then
+           delete goBg + the <div class="tune-panel"> near the end of the markup */
+        background-color: var(--go-bg, var(--background--blue));
     }
 
     /* TODO F8: tune this hover interaction */
     .lets-go:hover {
         color: var(--tertiary--blue);
+    }
+
+    /* the arrow is shared markup in both states, always unstyled/untransitioned —
+       it never moves or fades, it just happens to sit in the same right-flush spot */
+    .lets-go-arrow {
+        display: inline-block;
+    }
+
+    /* only the label mounts/unmounts, and only it carries the swap-in transition */
+    .lets-go-label {
+        display: inline-block;
+        margin-right: 0.4rem;
     }
 
     .stamp-text{
