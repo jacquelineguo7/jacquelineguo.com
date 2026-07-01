@@ -14,7 +14,7 @@
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@sveltejs/adapter-auto": "^7.0.1",
-		"@sveltejs/kit": "^2.57.0",
+		"@sveltejs/kit": "^2.69.0",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@types/node": "^24",
 		"eslint": "^10.4.0",
@@ -26,5 +26,11 @@
 		"prettier-plugin-svelte": "^3.5.1",
 		"svelte": "^5.55.2",
 		"vite": "^8.0.7"
+	},
+	"dependencies": {
+		"@upstash/redis": "^1.38.0"
+	},
+	"overrides": {
+		"cookie": "^0.7.0"
 	}
 }

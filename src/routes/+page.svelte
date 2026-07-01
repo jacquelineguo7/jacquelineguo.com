@@ -2,6 +2,7 @@
     import { resolve } from '$app/paths';
     import { goto } from '$app/navigation';
     import { fade } from 'svelte/transition';
+    import { onMount } from 'svelte';
 
     let moved;
     let stage;
@@ -24,15 +25,9 @@
 
     /* ─────────────────────────────────────────────────────────────
        PLACED-STATE INTERACTION — features to build (see step-by-step)
-       -- F1  placed         : which card is staged in the box (null = default)
-       -- F2  enter placed   : in endDrag(), set `placed` instead of goto()
-       -- F3  card data      : add `media` img + `address` per card (F9 = geo)
-       F4  swap content   : pc-left shows title/desc/media when placed
-       F5  snap to box    : selected stamp animates into pc-right slot
-       F6  corner cluster : other stamps bunch into bottom-left
        F7  go back        : corner = back hit-area (hover-scale) + ←BACK + Esc
        F8  let's go       : button → navigation (the old goto lives here now)
-       F9  geolocation    : (stretch) fill TO: from visitor IP location
+       F9  geolocation    : done — see visitStats/addressLines below
        F10 transitions    : fade/slide choreography between the two states
        ───────────────────────────────────────────────────────────── */
     
@@ -107,15 +102,31 @@
         };
     }
 
-    let addressLines = $derived(placed ? placed.address : ['', '', '']);
+    // F9: visit count + geolocation, fetched once from our own /api/visit
+    // endpoint (which reads Vercel's edge geo headers and increments the
+    // counter in Upstash). Falls back to placeholder copy if it fails or
+    // is running somewhere without those headers (e.g. local dev).
+    let visitStats = $state({ count: null, city: null, country: null });
+
+    onMount(async () => {
+        try {
+            const res = await fetch('/api/visit');
+            if (res.ok) visitStats = await res.json();
+        } catch {
+            // network error — visitStats stays at its placeholder defaults
+        }
+    });
+
+    let addressLines = $derived([
+        `Internet Visitor #${visitStats.count ?? '----'}`,
+        visitStats.city ? `${visitStats.city}, ${visitStats.country}` : 'Somewhere, Out There',
+        'World Wide Web, Earth'
+    ]);
     // $derived as a computed state (calculated from other reactive things)
 
     // TODO F7/F8: component actions (not inside the draggable action below)
     //   goBack()  → placed = null;  (also bind to Escape keydown + corner click)
     //   mail()    → goto(resolve(placed.href));  (the LET'S GO button)
-    // TODO F9 (stretch): on mount, fetch visitor city/region/country from an IP
-    //   geolocation API and fill the TO: lines; fall back to the static playful
-    //   copy if it fails. If the site is statically hosted, do this client-side.
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
@@ -321,10 +332,7 @@
     function resist(overshoot, give) {
         return (1 - 1 / (overshoot / give + 1)) * give;
     }
-
-
 }
-
 
 </script>
 
@@ -388,29 +396,21 @@
                                 </div>
 
                                 <div class="address">
-                                <span class="to-label">To:</span>
+                                    <p class="to-label">To:</p>
                                     {#each addressLines as line, i(i)}
                                     <!-- each item needs an ID https://svelte.dev/tutorial/svelte/keyed-each-blocks-->
                                     <!-- use i(i) since this is static and mutating the list is not a worry -->
                                         <p class="address-line">{line}</p>
                                     {/each}
                                 </div>
+                                <div class="project-go">
+                                    {#if placed}
+                                        <a class="project-go" in:fade={{ duration: 60 }} href="{placed.href}">Button</a>
+                                    {/if}
+                                </div>
                             </div>
-                            
-
-                            <!-- TODO F3/F9: add the TO: address block on the right half.
-                                 Empty/decorative by default; filled when placed (playful copy,
-                                 or visitor's real city/country via IP geolocation, F9). -->
                         </div>
 
-                        <!-- TODO F6: when placed, animate the two NON-selected stamps into a
-                             bunched cluster in the bottom-left corner; the selected one goes to
-                             the box (F5). Drive their x/y/rotation toward preset cluster targets.
-                             DECISION — back RESTORES, it does not reset: before moving anything,
-                             snapshot every card's x/y/rotation/z (the live values get overwritten
-                             here). For the selected card, snapshot its PRE-DRAG origin
-                             (originX/originY from onPointerDown), not the box — so back undoes the
-                             whole gesture. Snapshot z too, or the pile returns reshuffled. -->
                         <div
                             class="floating-item"
                             style:--card-w="{cardbingo.width}rem"
@@ -732,8 +732,7 @@
     .postcard-decor {
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
-        position: relative;
+        height: 100%;
     }
 
     .pc-left {
@@ -747,7 +746,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: end;
+        justify-content: space-between;
         padding: 2.4rem;
     }
 
@@ -814,12 +813,30 @@
         height: auto;        /* height follows automatically → no distortion */
     }
 
+    .address {
+        margin-top: auto;
+        font-family: 'Whois', monospace;
+        text-transform: uppercase;
+    }
+
     .address-line {
+        font-family: 'Whois', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.03rem;
         margin: 0 0 0.9rem;                       /* gap between lines */
         padding-bottom: 0.2rem;                   /* lift text off the rule */
         min-height: 1.4em;                        /* keeps EMPTY lines visible */
-        border-bottom: 1px solid var(--light--blue);
+        border-bottom: 1.2px solid var(--light--blue);
+    }
+
+    .to-label {
+        color: var(--secondary--blue);
         font-family: 'Whois', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.03rem;
+        margin: 0 0 0.9rem;                       /* gap between lines */
+        padding-bottom: 0.05rem;                   /* lift text off the rule */
+        min-height: 1.4em;                        /* keeps EMPTY lines visible */
     }
 
     .work-desc {
@@ -827,13 +844,19 @@
         margin-top: 0;
         line-height: 1.3rem;
         letter-spacing: 0.03rem;
-        
-
     }
 
     .right-flush-div {
         display: flex;
         justify-content: end;
+    }
+
+    #to-label {
+        margin-bottom: 0.5rem;
+    }
+
+    .stamp-text{
+        color: var(--secondary--blue);
     }
 
     /* ── TODO: styles for the placed state ───────────────────────────
