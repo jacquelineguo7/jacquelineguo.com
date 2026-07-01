@@ -15,9 +15,9 @@
 
     /* ─────────────────────────────────────────────────────────────
        PLACED-STATE INTERACTION — features to build (see step-by-step)
-       F1  placed         : which card is staged in the box (null = default)
-       F2  enter placed   : in endDrag(), set `placed` instead of goto()
-       F3  card data      : add `media` img + `address` per card (F9 = geo)
+       -- F1  placed         : which card is staged in the box (null = default)
+       -- F2  enter placed   : in endDrag(), set `placed` instead of goto()
+       -- F3  card data      : add `media` img + `address` per card (F9 = geo)
        F4  swap content   : pc-left shows title/desc/media when placed
        F5  snap to box    : selected stamp animates into pc-right slot
        F6  corner cluster : other stamps bunch into bottom-left
@@ -26,34 +26,37 @@
        F9  geolocation    : (stretch) fill TO: from visitor IP location
        F10 transitions    : fade/slide choreography between the two states
        ───────────────────────────────────────────────────────────── */
-    // TODO F1: let placed = $state(null);
+    
     let placed = $state(null);
 
-    // TODO F3: give each card a `media` image (the gray preview box) and
-    //          optional `address` lines for the TO: block.
     let cardbingo = $state({
-        x: 50, y: 170, rotation: -2, width: 12, z: 1,
+        x: 50, y: 170, rotation: -2, width: 11, z: 1,
         href: '/work/bingo',
         title: 'photo bingo',
-        desc: 'One-line blurb shown on hover.',
-        media: ''
+        desc: 'Creating a 10x bingo experience for groups using playful visual and interaction design.',
+        media: '',
     });
 
     let cardxcode = $state({
-        x: 265, y: 235, rotation: 0, width: 16, z: 2,
+        x: 265, y: 235, rotation: 0, width: 15, z: 2,
         href: '/work/xcode',
         title: 'xcode',
-        desc: 'One-line blurb shown on hover.',
+        desc: 'Reimagining the new project experience and building with AI in Xcode.',
         media: ''
     });
 
     let cardrabbit = $state({
-        x: 260, y: 60, rotation: 3, width: 14, z: 3,
+        x: 260, y: 60, rotation: 3, width: 13, z: 3,
         href: '/work/rabbitholing',
         title: 'rabbitholing',
-        desc: 'One-line blurb shown on hover.',
+        desc: 'Rabbithole with LLMs by interacting with your chat queries as a knowledge graph.',
         media: ''
     });
+
+    
+
+    let addressLines = $derived(placed ? placed.address : ['', '', '']); 
+    // $derived as a computed state (calculated from other reactive things)
 
     // TODO F7/F8: component actions (not inside the draggable action below)
     //   goBack()  → placed = null;  (also bind to Escape keydown + corner click)
@@ -92,7 +95,7 @@
             //          set `placed = pos`, snap this stamp into the box (F5),
             //          bunch the others into the corner (F6).
             //          The goto() below moves to the LET'S GO button (F8).
-            goto(resolve(pos.href));
+            // goto(resolve(pos.href));
         }
     }   
 
@@ -178,7 +181,7 @@
                         <div id="intro">
                             <p class="top-p">Hey! This is Jacqueline.</p>
                             <p>I'm a product + graphic designer, amateur engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC CS Games</a> grad (fight on!) based in the San Francisco Bay Area.</p>
-                            <p>I’m excited by tackling hard, technical problems with great people to make our world a better place, and so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon. Previously, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> working on dev tooling and AI.</p>
+                            <p>I’m excited by tackling difficult, high-craft technical problems with great people to make our world a better place, so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon! Previously, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> working on dev tooling and AI.</p>
                             <p>Outside of work, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student. Right now, I’m learning about how the web was built and how that contributes to its current state. You can read my field notes <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing.</p>
                             <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
                         </div>
@@ -208,14 +211,16 @@
             <div class="col" id="right-col">
                 <div id="envelope">
                     <div id="envelope-flap"></div>
-                    <div id="selected-work" bind:this={stage}>
+                    <div id="postcard" bind:this={stage}>
                         <div class="postcard-decor">
                             <div class="pc-left">
-                                <!-- TODO F4: swap on placed state (use Svelte transition: for the fade, F10)
-                                     {#if placed}  project title + desc + media (the gray box) from `placed`
-                                     {:else}       "Featured Work" + ruled lines (current)            -->
-                                <h2 id="feature">Featured Work</h2>
-                                <div class="line-media-container"></div>
+                                {#if placed}
+                                    <h2 id="work-title">{placed.title}</h2>
+                                    <p class="work-desc">{placed.desc}</p>
+                                    <img class="work-media" src={placed.media} alt="{placed.desc}">
+                                {:else}
+                                    <h2 id="work-title">Featured Work</h2>
+                                {/if}
                             </div>
                             <div class="pc-right">
                                 <!-- TODO F5: when placed, the chosen stamp snaps INTO this box
@@ -225,14 +230,18 @@
                                     <!-- bind:this hands you that node after render -->
                                     <p class="stamp-text">Place<br>Stamp<br>Here</p>
                                 </div>
+
+                                <div class="address">
+                                <span class="to-label">To:</span>
+                                    {#each addressLines as line, i(i)}
+                                    <!-- each item needs an ID https://svelte.dev/tutorial/svelte/keyed-each-blocks-->
+                                    <!-- use i(i) since this is static and mutating the list is not a worry -->
+                                        <p class="address-line">{line}</p>
+                                    {/each}
+                                </div>
                             </div>
-                            <div id="address-block">
-                                <p class="pc-text">To:</p>
-                                <p class="pc-text">Dear Internet User</p>
-                                <p class="pc-text">United States</p>
-                                <p class="pc-text">World Wide Web, Earth</p>
-                                
-                            </div>
+                            
+
                             <!-- TODO F3/F9: add the TO: address block on the right half.
                                  Empty/decorative by default; filled when placed (playful copy,
                                  or visitor's real city/country via IP geolocation, F9). -->
@@ -312,6 +321,7 @@
         </div>
     </div>
 </div>
+
 
 <style>
     :global(*) { box-sizing: border-box; }
@@ -543,34 +553,43 @@
         border-bottom-right-radius: 1rem;
     }
 
-    #selected-work {
+    #postcard {
         position: relative;   /* the stage: floating items measure x/y from here */
         min-height: 45vh;    /* canvas room — absolute items don't prop this open */
         background-color: #F8F8F4;
-        padding: 3rem;
         color: var(--primary--blue);
         align-items: baseline;
         gap: 2rem;
     }
+    #postcard::after {
+        content: '';
+        position: absolute;
+        left: 50%;  top: 0;  bottom: 0;
+        width: 1.6px;
+        background: var(--light--blue);
+        transform: translateX(-50%);   /* centers the 2px on the 50% mark */
+    }
 
     .postcard-decor {
-        flex: 1;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        position: relative;
     }
 
     .pc-left {
         flex: 1;
-        width: 12rem;
         display: flex;
         flex-direction: column;
+        padding: 2.4rem;
     }
 
     .pc-right {
         flex: 1;
         display: flex;
+        flex-direction: column;
         justify-content: end;
+        padding: 2.4rem;
     }
 
     .stamp-div {
@@ -606,16 +625,6 @@
         text-align: center;
     }
 
-    .line-media-container {
-        margin-top: 1rem;
-        flex: 1;
-        background-image: repeating-linear-gradient(
-            to bottom,
-            var(--light--blue) 0 0.1rem,   /* line */
-            transparent 0.1rem 1.8rem          /* gap (period) */
-        );
-    }
-
     .floating-item {
         position: absolute;      /* lifts out of flow; positioned from the stage */
         top: 0;
@@ -639,6 +648,23 @@
         display: block;
         width: 100%;         /* fill the card's width */
         height: auto;        /* height follows automatically → no distortion */
+    }
+
+    .address-line {
+        margin: 0 0 0.9rem;                       /* gap between lines */
+        padding-bottom: 0.2rem;                   /* lift text off the rule */
+        min-height: 1.4em;                        /* keeps EMPTY lines visible */
+        border-bottom: 1px solid var(--light--blue);
+        font-family: 'Whois', monospace;
+    }
+
+    .work-desc {
+        font-family: 'Whois';
+        margin-top: 0;
+        line-height: 1.3rem;
+        letter-spacing: 0.03rem;
+        
+
     }
 
     /* ── TODO: styles for the placed state ───────────────────────────
