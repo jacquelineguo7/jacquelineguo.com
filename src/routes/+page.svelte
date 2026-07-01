@@ -29,9 +29,6 @@
        ───────────────────────────────────────────────────────────── */
     
     let placed = $state(null);
-    let hovering = $state(null);              // card previewed while a stamp hovers the box
-    let shown = $derived(placed ?? hovering); // what the postcard shows (placed wins over hover)
-    let triggerMode = $state('hover');        // EXPERIMENT: 'hover' previews mid-drag, 'drop' waits for release
 
     let cardbingo = $state({
         x: 50, y: 170, rotation: -2, width: 11, z: 1,
@@ -74,13 +71,6 @@
         placed = null;
     }
 
-    // EXPERIMENT toggle: switch preview trigger, resetting to a clean slate
-    function setMode(m) {
-        triggerMode = m;
-        hovering = null;
-        goBack();
-    }
-
     // where the bunched stamps sit, bottom-left of the stage
     function cornerSlots(n) {
         const H = stage.clientHeight;
@@ -101,7 +91,7 @@
         };
     }
 
-    let addressLines = $derived(shown ? shown.address : ['', '', '']);
+    let addressLines = $derived(placed ? placed.address : ['', '', '']);
     // $derived as a computed state (calculated from other reactive things)
 
     // TODO F7/F8: component actions (not inside the draggable action below)
@@ -146,7 +136,6 @@
 
         dragging = false;
         overZone = false;
-        hovering = null;              // end the live hover preview; placed (if set) takes over
 
         const droppedInBox = moved && isOverDropZone(node);
         const isPlacedStamp = placed && placed.href === pos.href;
@@ -211,15 +200,8 @@
             moved = true; // drag, not click
             dragging = true;
         }
-        if (dragging) {
-            const nowOver = isOverDropZone(node);
-            // HOVER mode only: clear the others + preview content while over the box
-            if (triggerMode === 'hover') {
-                if (nowOver && !overZone) { othersToCorner(); hovering = pos; }      // just entered
-                else if (!nowOver && overZone) { othersRestore(); hovering = null; } // just left
-            }
-            overZone = nowOver;
-        }
+        // stamps now clear on DROP, not on hover — here we only light up the box
+        if (dragging) overZone = isOverDropZone(node);
     }
 
     node.addEventListener('pointerdown', onPointerDown);
@@ -258,11 +240,6 @@
 </script>
 
 <div class="page-container">
-    <div class="mode-toggle">
-        <span class="mode-label">preview on</span>
-        <button class:active={triggerMode === 'hover'} onclick={() => setMode('hover')}>hover</button>
-        <button class:active={triggerMode === 'drop'} onclick={() => setMode('drop')}>drop</button>
-    </div>
     <div class="border">
         <div class="page-layout">
             <div class="col" id="left-col">
@@ -305,10 +282,10 @@
                     <div id="postcard" bind:this={stage}>
                         <div class="postcard-decor">
                             <div class="pc-left">
-                                {#if shown}
-                                    <h2 class="work-title" in:fade={{ duration: 280 }}>{shown.title}</h2>
-                                    <p class="work-desc" in:fade={{ duration: 280 }}>{shown.desc}</p>
-                                    <img class="work-media" in:fade={{ duration: 280 }} src={shown.media} alt="{shown.desc}">
+                                {#if placed}
+                                    <h2 class="work-title" in:fade={{ duration: 280 }}>{placed.title}</h2>
+                                    <p class="work-desc" in:fade={{ duration: 280 }}>{placed.desc}</p>
+                                    <img class="work-media" in:fade={{ duration: 280 }} src={placed.media} alt="{placed.desc}">
                                 {:else}
                                     <h2 class="work-title" in:fade={{ duration: 280 }}>Featured Work</h2>
                                 {/if}
@@ -448,36 +425,6 @@
         height: 100dvh;
         overflow: hidden; /* Prevents scrolling */
         background-color: var(--background--blue);
-    }
-
-    /* EXPERIMENT toggle — remove once you've picked a mode */
-    .mode-toggle {
-        position: fixed;
-        bottom: 1rem;
-        right: 1rem;
-        z-index: 100;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-family: 'Commissioner', sans-serif;
-        font-size: 0.78rem;
-    }
-    .mode-toggle .mode-label {
-        color: var(--primary--blue);
-        opacity: 0.6;
-    }
-    .mode-toggle button {
-        border: 1px solid var(--light--blue);
-        background: white;
-        color: var(--primary--blue);
-        padding: 0.35rem 0.7rem;
-        cursor: pointer;
-        font: inherit;
-    }
-    .mode-toggle button.active {
-        background: var(--primary--blue);
-        color: white;
-        border-color: var(--primary--blue);
     }
 
     .border {
