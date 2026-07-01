@@ -55,6 +55,21 @@
 
     const cards = [cardbingo, cardxcode, cardrabbit];
 
+    // each card's TRUE resting spot — captured once, updated only when the user
+    // deliberately drops a stamp (never when it's auto-moved to the corner).
+    const homes = Object.fromEntries(
+        cards.map(c => [c.href, { x: c.x, y: c.y, rotation: c.rotation }])
+    );
+
+    // send every stamp back to its home and leave the placed state
+    function goBack() {
+        cards.forEach(c => {
+            const h = homes[c.href];
+            c.x = h.x; c.y = h.y; c.rotation = h.rotation;
+        });
+        placed = null;
+    }
+
     // where the bunched stamps sit, bottom-left of the stage
     function cornerSlots(n) {
         const H = stage.clientHeight;
@@ -87,7 +102,6 @@
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
-    let snapshot = null;   // saved home positions of the OTHER cards, this drag
 
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
@@ -95,15 +109,15 @@
 
     function othersToCorner() {
         const others = cards.filter(c => c.href !== pos.href);   // everyone but me
-        snapshot = others.map(c => ({ card: c, x: c.x, y: c.y, rotation: c.rotation }));
         const slots = cornerSlots(others.length);
         others.forEach((c, i) => { c.x = slots[i].x; c.y = slots[i].y; c.rotation = slots[i].rot; });
     }
 
+    // bring the bunched stamps back to their real homes (skip a placed one)
     function othersRestore() {
-        if (!snapshot) return;
-        snapshot.forEach(s => { s.card.x = s.x; s.card.y = s.y; s.card.rotation = s.rotation; });
-        snapshot = null;
+        cards
+            .filter(c => c.href !== pos.href && (!placed || c.href !== placed.href))
+            .forEach(c => { const h = homes[c.href]; c.x = h.x; c.y = h.y; c.rotation = h.rotation; });
     }
 
     function endDrag(event) {
@@ -120,20 +134,34 @@
         pos.y = clamp(pos.y, 0, maxY);
 
         dragging = false;
-        if (moved && isOverDropZone(node)) {
+        overZone = false;
+
+        const droppedInBox = moved && isOverDropZone(node);
+        const isPlacedStamp = placed && placed.href === pos.href;
+
+        if (droppedInBox) {
             const slot = boxSlotFor(node);
             pos.x = slot.x;          // center it…
             pos.y = slot.y;
             pos.rotation = -3;       // …with a slight tilt
             placed = pos;            // enter placed state (drives F4 content)
-            overZone = false;
-            // others stay bunched — snapshot kept for the ← BACK button (F7)
             // goto(resolve(pos.href));   ← moves to the LET'S GO button (F8)
+        } else if (isPlacedStamp) {
+            // going back from the placed state
+            if (moved) {
+                // peeled it out and dropped it somewhere new → that's its new home
+                homes[pos.href] = { x: pos.x, y: pos.y, rotation: pos.rotation };
+                placed = null;
+                othersRestore();     // bring the bunched ones home; this one stays put
+            } else {
+                goBack();            // simple click → every stamp returns home
+            }
         } else {
-            overZone = false;
-            othersRestore();         // didn't place → make sure the others are home
+            // a normal stamp dropped outside the box
+            if (moved) homes[pos.href] = { x: pos.x, y: pos.y, rotation: pos.rotation };
+            othersRestore();
         }
-    }   
+    }
 
     function onPointerDown(event) {
         node.style.transition = 'none';    // ← add this: no smoothing while dragging
@@ -582,6 +610,8 @@
         height: 60vh;          /* gives the flap's % height something to resolve against */
         position: relative;
         padding: 2rem;
+        overflow: hidden;
+        min-height: 50vh;
     }
 
     #envelope-flap {
@@ -596,8 +626,9 @@
     }
 
     #postcard {
+        height: 100%;
         position: relative;   /* the stage: floating items measure x/y from here */
-        min-height: 45vh;    /* canvas room — absolute items don't prop this open */
+            /* canvas room — absolute items don't prop this open */
         background-color: #F8F8F4;
         color: var(--primary--blue);
         align-items: baseline;
