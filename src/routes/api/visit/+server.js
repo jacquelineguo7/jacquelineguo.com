@@ -7,6 +7,7 @@ import { env } from '$env/dynamic/private';
 // (only present on requests actually served by Vercel, not in local dev).
 export async function GET({ request }) {
 	const city = request.headers.get('x-vercel-ip-city');
+	const region = request.headers.get('x-vercel-ip-country-region');
 	const country = request.headers.get('x-vercel-ip-country');
 
 	let count = null;
@@ -20,6 +21,7 @@ export async function GET({ request }) {
 	return json({
 		count,
 		city: city ? decodeURIComponent(city) : null,
+		region,
 		country
 	});
 }

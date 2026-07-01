@@ -106,7 +106,8 @@
     // endpoint (which reads Vercel's edge geo headers and increments the
     // counter in Upstash). Falls back to placeholder copy if it fails or
     // is running somewhere without those headers (e.g. local dev).
-    let visitStats = $state({ count: null, city: null, country: null });
+    let visitStats = $state({ count: null, city: null, region: null, country: null });
+    const countryNames = new Intl.DisplayNames(['en'], { type: 'region' });
 
     onMount(async () => {
         try {
@@ -119,7 +120,9 @@
 
     let addressLines = $derived([
         `Internet Visitor #${visitStats.count ?? '----'}`,
-        visitStats.city ? `${visitStats.city}, ${visitStats.country}` : 'Somewhere, Out There',
+        visitStats.city
+            ? `${visitStats.city}, ${visitStats.region ? visitStats.region + ', ' : ''}${countryNames.of(visitStats.country) ?? visitStats.country}`
+            : 'Somewhere Out There',
         'World Wide Web, Earth'
     ]);
     // $derived as a computed state (calculated from other reactive things)
