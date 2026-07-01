@@ -406,10 +406,15 @@
                                         <p class="address-line">{line}</p>
                                     {/each}
                                 </div>
-                                <div class="project-go">
-                                    {#if placed}
-                                        <a class="project-go" in:fade={{ duration: 60 }} href="{placed.href}">Button</a>
-                                    {/if}
+
+                                <div class="right-flush-div">
+                                    <div id="project-go-button">
+                                        {#if placed}
+                                            <a class="lets-go" in:fade={{ duration: 60 }} href="{placed.href}">Go To Project &gt;&gt;&gt;</a>
+                                        {:else}
+                                            <span class="lets-go-idle" aria-hidden="true">&gt;&gt;&gt;</span>
+                                        {/if}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -816,16 +821,25 @@
         height: auto;        /* height follows automatically → no distortion */
     }
 
-    .address {
-        margin-top: auto;
-        font-family: 'Whois', monospace;
-        text-transform: uppercase;
-    }
-
-    .address-line {
+    /* shared Whois-label look: uppercase monospace, tracked out 0.03rem.
+       grouped here so the trio only needs tuning in one place. */
+    .address,
+    .address-line,
+    .to-label,
+    .work-desc,
+    .lets-go,
+    .lets-go-idle,
+    .stamp-div p {
         font-family: 'Whois', monospace;
         text-transform: uppercase;
         letter-spacing: 0.03rem;
+    }
+
+    .work-desc {
+        text-transform: none;    /* body copy — only wants the font + tracking, not caps */
+    }
+
+    .address-line {
         margin: 0 0 0.9rem;                       /* gap between lines */
         padding-bottom: 0.2rem;                   /* lift text off the rule */
         min-height: 1.4em;                        /* keeps EMPTY lines visible */
@@ -834,19 +848,14 @@
 
     .to-label {
         color: var(--secondary--blue);
-        font-family: 'Whois', monospace;
-        text-transform: uppercase;
-        letter-spacing: 0.03rem;
-        margin: 0 0 0.9rem;                       /* gap between lines */
-        padding-bottom: 0.05rem;                   /* lift text off the rule */
+        margin: 0 0 0.5rem;                       /* lift text off the rule */
+        padding-bottom: 0.05rem;
         min-height: 1.4em;                        /* keeps EMPTY lines visible */
     }
 
     .work-desc {
-        font-family: 'Whois';
         margin-top: 0;
         line-height: 1.3rem;
-        letter-spacing: 0.03rem;
     }
 
     .right-flush-div {
@@ -854,8 +863,35 @@
         justify-content: end;
     }
 
-    #to-label {
-        margin-bottom: 0.5rem;
+    /* reserves the button's footprint even when {#if placed} is false,
+       so .address above it doesn't jump when a stamp is placed/removed */
+    #project-go-button {
+        min-height: 2.75rem;
+    }
+
+    .lets-go,
+    .lets-go-idle {
+        display: inline-block;
+        color: var(--secondary--blue);
+        padding: 0.6rem;
+        margin-bottom: 0;
+    }
+
+    .lets-go-idle {
+        border: 1px #B1C8DC;
+    }
+
+    .lets-go {
+        text-decoration: none;
+        transition:
+            color var(--duration-base) var(--ease-out),
+            transform var(--duration-base) var(--ease-out);
+        background-color: var(--background--blue);
+    }
+
+    /* TODO F8: tune this hover interaction */
+    .lets-go:hover {
+        color: var(--tertiary--blue);
     }
 
     .stamp-text{
