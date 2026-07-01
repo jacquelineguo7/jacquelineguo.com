@@ -1,6 +1,7 @@
 <script>
     import { resolve } from '$app/paths';
     import { goto } from '$app/navigation';
+    import { fade } from 'svelte/transition';
 
     let moved;
     let stage;
@@ -144,6 +145,7 @@
             pos.x = slot.x;          // center it…
             pos.y = slot.y;
             pos.rotation = -3;       // …with a slight tilt
+            othersToCorner();        // clear the other stamps now, on drop
             placed = pos;            // enter placed state (drives F4 content)
             // goto(resolve(pos.href));   ← moves to the LET'S GO button (F8)
         } else if (isPlacedStamp) {
@@ -198,12 +200,8 @@
             moved = true; // drag, not click
             dragging = true;
         }
-        if (dragging) {
-            const nowOver = isOverDropZone(node);
-            if (nowOver && !overZone)      othersToCorner();   // just entered → clear them
-            else if (!nowOver && overZone) othersRestore();    // just left → bring them back
-            overZone = nowOver;
-        }
+        // stamps now clear on DROP, not on hover — here we only light up the box
+        if (dragging) overZone = isOverDropZone(node);
     }
 
     node.addEventListener('pointerdown', onPointerDown);
@@ -285,11 +283,11 @@
                         <div class="postcard-decor">
                             <div class="pc-left">
                                 {#if placed}
-                                    <h2 id="work-title">{placed.title}</h2>
-                                    <p class="work-desc">{placed.desc}</p>
-                                    <img class="work-media" src={placed.media} alt="{placed.desc}">
+                                    <h2 class="work-title" in:fade={{ duration: 280 }}>{placed.title}</h2>
+                                    <p class="work-desc" in:fade={{ duration: 280 }}>{placed.desc}</p>
+                                    <img class="work-media" in:fade={{ duration: 280 }} src={placed.media} alt="{placed.desc}">
                                 {:else}
-                                    <h2 id="work-title">Featured Work</h2>
+                                    <h2 class="work-title" in:fade={{ duration: 280 }}>Featured Work</h2>
                                 {/if}
                             </div>
                             <div class="pc-right">
@@ -707,12 +705,14 @@
         user-select: none;
         padding: 0;
         margin: 0;
-        transition: transform 340ms cubic-bezier(.34, 1.56, .64, 1);
+        transition: transform 280ms cubic-bezier(.34, 1.10, .64, 1);  /* 280ms, bounce 0.10 */
         will-change: transform;
     }
-    /* .floating-item:active {
-        cursor: grabbing;
-    } */
+
+    /* respect users who ask for less motion — stamps relocate instantly, no sweep */
+    @media (prefers-reduced-motion: reduce) {
+        .floating-item { transition: none; }
+    }
 
     .example-card {
         width: var(--card-w, 13rem);
