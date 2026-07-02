@@ -955,13 +955,17 @@
     @media (max-width: 600px) {
         :root {
             --frame-inset: 0.75rem;
-            --page-pad-x: 1.25rem;
+            --page-pad-x: 2rem;
             --page-pad-top: 2rem;
             --page-pad-bottom: 2rem;
             --section-gap: 2rem;
             --card-pad: 1rem;
-            --block-pad: 1rem;
+            --block-pad: 1.25rem;
             --notes-pad-x: 1rem;
+        }
+
+        .zigzag {
+            --s: 0.4rem;
         }
     }
 
