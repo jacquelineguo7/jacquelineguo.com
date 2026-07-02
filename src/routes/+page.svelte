@@ -44,7 +44,7 @@
     let goBg = $state('#E8EEF2');          // matches --background--blue
 
     let cardbingo = $state({
-        x: 32, y: 100, rotation: -2, width: 11, z: 1,
+        x: 32, y: 100, rotation: -2, width: 12, z: 1,
         href: '/work/bingo',
         title: 'photo bingo',
         desc: 'Creating a 10x bingo experience for groups using playful visual and interaction design.',
@@ -52,7 +52,7 @@
     });
 
     let cardxcode = $state({
-        x: 185, y: 195, rotation: 0, width: 15, z: 2,
+        x: 185, y: 195, rotation: 0, width: 16, z: 2,
         href: '/work/xcode',
         title: 'xcode',
         desc: 'Reimagining the new project experience and building with AI in Xcode.',
@@ -60,7 +60,7 @@
     });
 
     let cardrabbit = $state({
-        x: 210, y: 30, rotation: 3, width: 13, z: 3,
+        x: 210, y: 30, rotation: 3, width: 14, z: 3,
         href: '/work/rabbitholing',
         title: 'rabbitholing',
         desc: 'Rabbithole with LLMs by interacting with your chat queries in the form of a knowledge graph.',
@@ -136,10 +136,6 @@
         'World Wide Web, Earth'
     ]);
     // $derived as a computed state (calculated from other reactive things)
-
-    // TODO F7/F8: component actions (not inside the draggable action below)
-    //   goBack()  → placed = null;  (also bind to Escape keydown + corner click)
-    //   mail()    → goto(resolve(placed.href));  (the LET'S GO button)
 
     function draggable(node, pos) {
     let startX, startY, originX, originY;
@@ -431,7 +427,7 @@
 
                         <div
                             class="floating-item"
-                            style:--card-w="{cardbingo.width}rem"
+                            style:--card-w={cardbingo.width}
                             style:transform="translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)"
                             style:z-index={cardbingo.z}
                             use:draggable={cardbingo}
@@ -444,7 +440,7 @@
 
                         <div
                             class="floating-item"
-                            style:--card-w="{cardxcode.width}rem"
+                            style:--card-w={cardxcode.width}
                             style:transform="translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)"
                             style:z-index={cardxcode.z}
                             use:draggable={cardxcode}
@@ -457,7 +453,7 @@
 
                         <div
                             class="floating-item"
-                            style:--card-w="{cardrabbit.width}rem"
+                            style:--card-w={cardrabbit.width}
                             style:transform="translate3d({cardrabbit.x}px, {cardrabbit.y}px, 0) rotate({cardrabbit.rotation}deg)"
                             style:z-index={cardrabbit.z}
                             use:draggable={cardrabbit}
@@ -467,18 +463,6 @@
                                 <!-- <span class="coord-readout">{Math.round(cardrabbit.x)}, {Math.round(cardrabbit.y)}</span> -->
                             </div>
                         </div>
-
-                        <!-- TODO F7: render {#if placed} — a tinted "back" hit-area over the
-                             bottom-left corner where the stamps bunch. Click anywhere in it (or
-                             on a stamp) → goBack(). Scale the stamps a little on hover. Include a
-                             visible "← BACK" label so it reads as a control, not just a pile.
-                             goBack() RESTORES the snapshot taken in F6 (animate all three cards
-                             back to their saved x/y/rotation/z), then sets placed = null — so the
-                             arrangement the user left is preserved, not reset to defaults. -->
-
-                        <!-- TODO F8: render {#if placed} — the "LET'S GO →" button → mail()
-                             (the navigation). This is the deliberate "send" step. Focus it on
-                             enter so it's keyboard-reachable. -->
                     </div>
                 </div>
 
@@ -495,18 +479,6 @@
         </div>
     </div>
 </div>
-
-{#if import.meta.env.DEV}
-    <!-- THROWAWAY — delete this panel + the goBg state once you've picked a
-         color you like. Doesn't render in production builds. -->
-    <div class="tune-panel">
-        <p class="tune-title">tune the "Go To Project" background</p>
-        <label>
-            background <span class="tune-value">{goBg}</span>
-            <input type="color" bind:value={goBg}>
-        </label>
-    </div>
-{/if}
 
 <style>
     :global(*) { box-sizing: border-box; }
@@ -539,8 +511,7 @@
     .page-container {
         display: flex;
         width: 100%; /* Use 100% instead of 100vw to avoid scrollbar overflow */
-        height: 100dvh;
-        overflow: hidden; /* Prevents scrolling */
+        min-height: 100dvh; /* fill the viewport, but grow + scroll when content needs it */
         background-color: var(--background--blue);
     }
 
@@ -583,7 +554,7 @@
         margin: 0;
         padding: 0;
         font-family: 'Monsieur-La-Doulaise';
-        font-size: 5.4rem;
+        font-size: clamp(3rem, 12vw, 5.4rem);   /* shrinks with the column, caps at the design size */
         font-weight: 400;
         color: var(--primary--blue);
         margin-bottom: -1.8rem;
@@ -722,11 +693,11 @@
 
     #envelope {
         background-color: #D7DDE2;
-        height: 60vh;          /* gives the flap's % height something to resolve against */
+        aspect-ratio: 5 / 3; /* fixed envelope proportion (5.5 wide × 3 tall) */
+        height: auto;          /* let the ratio drive height instead of the viewport */
         position: relative;
         padding: 2rem 3rem 2rem 3rem;
         overflow: hidden;
-        min-height: 50vh;
     }
 
     #envelope-flap {
@@ -748,6 +719,16 @@
         color: var(--primary--blue);
         align-items: baseline;
         gap: 2rem;
+
+        /* make the postcard a size-query container so 1cqw = 1% of its width.
+           the stamps + drop-zone size themselves in --stamp-unit below, which
+           tracks the postcard width — so their relative sizes stay locked and
+           the drag/drop interaction behaves the same at any width. */
+        container-type: inline-size;
+        /* 1 unit ≈ the old 1rem at the reference postcard width (~1054px, so
+           14px ≈ 1.33cqw). caps at 1rem (never bigger than the desktop design),
+           shrinks with the postcard, floors at 0.7rem so it stays usable. */
+        --stamp-unit: clamp(0.7rem, 1.33cqw, 1rem);
     }
     #postcard::after {
         content: '';
@@ -782,8 +763,8 @@
     .stamp-div {
         color: var(--light--blue);
         display: flex;
-        width: 10rem;
-        height: 8rem;
+        width: calc(10 * var(--stamp-unit));   /* was 10rem — now scales with the postcard */
+        height: calc(8 * var(--stamp-unit));   /* was 8rem */
         border: 0.3rem double var(--light--blue);
         justify-content: center;
         align-items: center;
@@ -816,6 +797,9 @@
         position: absolute;      /* lifts out of flow; positioned from the stage */
         top: 0;
         left: 0;                 /* origin = stage top-left; transform does the moving */
+        transform-origin: top left;   /* pin the stamp's top-left corner at (x,y) so
+                                         rotation + size changes radiate from there —
+                                         the layout holds as the postcard resizes */
         cursor: grab;
         touch-action: none;
         user-select: none;
@@ -831,7 +815,9 @@
     }
 
     .example-card {
-        width: var(--card-w, 13rem);
+        /* --card-w is now a unitless count (11/13/15), scaled by --stamp-unit so
+           each stamp stays a fixed % of the postcard, same basis as .stamp-div */
+        width: calc(var(--card-w, 13) * var(--stamp-unit));
         transition: transform 150ms ease-out;   /* grab-scale animation */
         transform-origin: center;
     }
@@ -912,8 +898,6 @@
            delete goBg + the <div class="tune-panel"> near the end of the markup */
         background-color: var(--go-bg, var(--background--blue));
     }
-
-    /* TODO F8: tune this hover interaction */
     .lets-go:hover {
         color: var(--tertiary--blue);
     }
@@ -934,13 +918,25 @@
         color: var(--secondary--blue);
     }
 
-    /* ── TODO: styles for the placed state ───────────────────────────
-       F4  .placed layout : title / desc / media column on pc-left
-       F5  stamp-in-box    : sizing + transition for the snapped stamp
-       F6  .corner-cluster : bottom-left stack positions for idle stamps
-       F7  .back-area      : light-red tint hit-area + stamp hover-scale
-       F8  .lets-go / .back-btn : button styling (Whois/Hershey type)
-       F10 transitions     : reuse var(--duration-base)/var(--ease-out)
-       ──────────────────────────────────────────────────────────────── */
+    /* ── RESPONSIVE: below this width the two columns stack, right under left.
+       The interactive postcard's small-screen behavior is a separate pass
+       (stamps still use fixed-px starts), so expect it to look tight here. ── */
+    @media (max-width: 1400px) {
+        .page-layout {
+            flex-direction: column;
+            padding: 3rem;
+            gap: 3rem;
+            min-height: auto;   /* size to content + scroll — don't squish the postcard */
+        }
+        /* stop the below-content vertical shrink (old fixed-height scaffolding),
+           so the envelope keeps its 5.5/3 aspect-ratio when stacked */
+        .col {
+            min-height: auto;
+        }
+        #left-col,
+        #right-col {
+            flex: 1;   /* drop the 1 : 1.6 desktop ratio when stacked */
+        }
+    }
 
 </style>
