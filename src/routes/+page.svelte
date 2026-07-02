@@ -517,7 +517,7 @@
 
     .border {
         flex: 1;            /* fill the width of page-container */
-        margin: 2rem;
+        margin: var(--frame-inset);
         border: 1px dashed #B1C8DC;
         display: flex;      /* so page-layout can fill its height */
         min-height: 0;
@@ -526,8 +526,8 @@
     .page-layout {
         flex: 1;            /* fill the height of .border */
         display: flex;
-        padding: 3rem 5rem 4rem 5rem;
-        gap: 5rem;
+        padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
+        gap: var(--col-gap);
         min-height: 0;      /* allow children to shrink instead of overflowing */
     }
 
@@ -539,11 +539,11 @@
 
     #left-col {
         flex: 1;
-        gap: 4rem;
+        gap: var(--section-gap);
     }
     #right-col {
         flex: 1.6;
-        gap: 4rem;
+        gap: var(--section-gap);
     }
 
     /* #intro-section {
@@ -584,7 +584,7 @@
 
     #intro {
         background-color: white;
-        padding: 2rem;
+        padding: var(--block-pad);
         border-bottom: 2px dotted var(--secondary--blue);
     }
 
@@ -604,7 +604,7 @@
     #other {
         display: flex;
         flex-direction: row;
-        gap: 4rem;
+        gap: var(--section-gap);
     }
 
     #photo {
@@ -643,12 +643,12 @@
 
     #notes {
         background-color: var(--barelythere--yellow);
-        padding: 2rem 0 2rem 0;
+        padding: var(--block-pad) 0;
         color: var(--primary--burgundy);
     }
 
     #notes h2 {
-        padding: 0 2rem 0 2rem;
+        padding: 0 var(--notes-pad-x);
     }
 
     #notes ol {
@@ -663,7 +663,7 @@
         font-family: 'Commissioner', sans-serif;
         color: var(--primary--burgundy);
         line-height: 120%;
-        padding: 0.8rem 2rem 0.8rem 2rem;
+        padding: 0.8rem var(--notes-pad-x);
         border-bottom: 0.4px solid var(--primary--burgundy--64);
         counter-increment: notes;
         display: flex;            /* keeps number + text aligned as columns */
@@ -696,7 +696,7 @@
         aspect-ratio: 5 / 3; /* fixed envelope proportion (5.5 wide × 3 tall) */
         height: auto;          /* let the ratio drive height instead of the viewport */
         position: relative;
-        padding: 2rem 3rem 2rem 3rem;
+        padding: var(--block-pad) 3rem;
         overflow: hidden;
     }
 
@@ -718,7 +718,7 @@
         background-color: #F8F8F4;
         color: var(--primary--blue);
         align-items: baseline;
-        gap: 2rem;
+        gap: var(--postcard-gap);
 
         /* make the postcard a size-query container so 1cqw = 1% of its width.
            the stamps + drop-zone size themselves in --stamp-unit below, which
@@ -749,7 +749,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        padding: 2.4rem;
+        padding: var(--card-pad);
     }
 
     .pc-right {
@@ -757,14 +757,14 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 2.4rem;
+        padding: var(--card-pad);
     }
 
     .stamp-div {
         color: var(--light--blue);
         display: flex;
-        width: calc(10 * var(--stamp-unit));   /* was 10rem — now scales with the postcard */
-        height: calc(8 * var(--stamp-unit));   /* was 8rem */
+        width: calc(12 * var(--stamp-unit));
+        height: calc(10 * var(--stamp-unit));
         border: 0.3rem double var(--light--blue);
         justify-content: center;
         align-items: center;
@@ -773,20 +773,15 @@
             background-color var(--duration-base) var(--ease-out),
             transform var(--duration-base) var(--ease-out);
     }
-
-    /* a stamp is being dragged somewhere on the stage → hint the target */
-    .stamp-div.dragging {
+    .stamp-div.dragging {                                           /* Hint Stamp Target */
         border: 0.3rem double var(--tertiary--blue);
         background-color: var(--hover--blue);
     }
-
-    /* the dragged stamp is over the box → ready to drop */
-    .stamp-div.over {
+    .stamp-div.over {                                               /* Stamp Over Box */
         border: 0.3rem double var(--tertiary--blue);
         background-color: var(--hover--blue);
         transform: scale(1.06);
     }
-
     .stamp-div p {
         font-family: 'Whois';
         text-transform: uppercase;
@@ -922,10 +917,16 @@
        The interactive postcard's small-screen behavior is a separate pass
        (stamps still use fixed-px starts), so expect it to look tight here. ── */
     @media (max-width: 1400px) {
+        /* retune the Tier-1 spacing levers (defined in app.css :root) */
+        :root {
+            --page-pad-x: 3rem;
+            --page-pad-top: 3rem;
+            --page-pad-bottom: 3rem;
+            --col-gap: 3rem;
+            --section-gap: 3rem;
+        }
         .page-layout {
             flex-direction: column;
-            padding: 3rem;
-            gap: 3rem;
             min-height: auto;   /* size to content + scroll — don't squish the postcard */
         }
         /* stop the below-content vertical shrink (old fixed-height scaffolding),
@@ -936,6 +937,31 @@
         #left-col,
         #right-col {
             flex: 1;   /* drop the 1 : 1.6 desktop ratio when stacked */
+        }
+    }
+
+    /* ~900px — tablet: tighten the frame + component paddings */
+    @media (max-width: 900px) {
+        :root {
+            --frame-inset: 1.25rem;
+            --page-pad-x: 2rem;
+            --card-pad: 1.5rem;
+            --block-pad: 1.5rem;
+            --notes-pad-x: 1.5rem;
+        }
+    }
+
+    /* ~600px — phone: minimal spacing */
+    @media (max-width: 600px) {
+        :root {
+            --frame-inset: 0.75rem;
+            --page-pad-x: 1.25rem;
+            --page-pad-top: 2rem;
+            --page-pad-bottom: 2rem;
+            --section-gap: 2rem;
+            --card-pad: 1rem;
+            --block-pad: 1rem;
+            --notes-pad-x: 1rem;
         }
     }
 

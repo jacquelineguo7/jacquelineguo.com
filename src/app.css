@@ -73,8 +73,6 @@
     --yellow--outline: #E0DAB6;
     --hover--blue: #F0F5F6;
 
-    
-
     --quartetvr--bg: #d9d5ccb1;
     --bingo--bg: #b9c3e5c5;
     
@@ -85,5 +83,19 @@
     --duration-slow: 800ms;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-    
+    /* ── SPACING TOKENS ──────────────────────────────────────────────
+       Tier 1: the big responsive levers — override these in the
+       @media blocks at the bottom of +page.svelte to retune per screen. */
+    --frame-inset: 2rem;      /* dashed frame gap from the window edge */
+    --page-pad-x: 5rem;       /* left/right padding inside the frame   */
+    --page-pad-top: 3rem;     /* top padding inside the frame          */
+    --page-pad-bottom: 4rem;  /* bottom padding inside the frame       */
+    --col-gap: 5rem;          /* gap between the left & right columns   */
+    --section-gap: 4rem;      /* vertical rhythm between stacked blocks */
+
+    /* Tier 2: component paddings — usually only tuned at small sizes. */
+    --block-pad: 2rem;        /* inner padding of intro / envelope / notes */
+    --card-pad: 2.4rem;       /* postcard halves (.pc-left / .pc-right)    */
+    --notes-pad-x: 2rem;      /* horizontal padding of notes rows + heading */
+    --postcard-gap: 2rem;     /* gap inside #postcard                       */
 }
