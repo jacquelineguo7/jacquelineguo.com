@@ -90,7 +90,7 @@
     --page-pad-x: 5rem;       /* left/right padding inside the frame   */
     --page-pad-top: 3rem;     /* top padding inside the frame          */
     --page-pad-bottom: 4rem;  /* bottom padding inside the frame       */
-    --col-gap: 5rem;          /* gap between the left & right columns   */
+    --col-gap: 4rem;          /* gap between the left & right columns   */
     --section-gap: 4rem;      /* vertical rhythm between stacked blocks */
 
     /* Tier 2: component paddings — usually only tuned at small sizes. */

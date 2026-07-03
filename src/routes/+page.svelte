@@ -15,6 +15,17 @@
     let dragging = $state(false);   // true while a stamp is mid-drag
     let overZone = $state(false);   // true when the dragged stamp is over the box
 
+    // ── POSITION SCALING ──────────────────────────────────────────
+    // Stamp coordinates (pos.x / pos.y, homes, corner + box slots) are all
+    // stored in REFERENCE SPACE: the px values that were tuned when the
+    // postcard was REF_W wide. `scale` = live postcard width / REF_W, so the
+    // whole scatter tracks the postcard as it resizes. It's applied ×scale at
+    // render, and pointer input is divided by scale wherever real (screen) px
+    // enter the drag math. The postcard keeps a ~constant aspect ratio, so one
+    // width-based factor drives both x and y.
+    const REF_W = 854;              // postcard width (px) at the 1792px design viewport → scale = 1 here
+    let scale = $state(1);
+
     // drag physics (tuned in the playground)
     const GRAB_SCALE = 1.04;        // scale-up when a stamp is grabbed
     const FRICTION = 0.85;          // velocity decay per frame during the float
@@ -86,7 +97,7 @@
 
     // where the bunched stamps sit, bottom-left of the stage
     function cornerSlots(n) {
-        const H = stage.clientHeight;
+        const H = stage.clientHeight / scale;   // reference-space height
         const slots = [
             { x: 24,  y: H - 50, rot: -8 },
             { x: 108,  y: H - 55, rot:   10 },
@@ -106,9 +117,11 @@
     function boxSlotFor(node) {
         const box   = dropZone.getBoundingClientRect();
         const stageR = stage.getBoundingClientRect();
+        // getBoundingClientRect + offsetWidth are real (screen) px → /scale to
+        // land back in the reference space that pos.x / pos.y live in
         return {
-            x: (box.left - stageR.left) + (box.width  - node.offsetWidth)  / 2,
-            y: (box.top  - stageR.top)  + (box.height - node.offsetHeight) / 2,
+            x: ((box.left - stageR.left) + (box.width  - node.offsetWidth)  / 2) / scale,
+            y: ((box.top  - stageR.top)  + (box.height - node.offsetHeight) / 2) / scale,
         };
     }
 
@@ -120,6 +133,14 @@
     const countryNames = new Intl.DisplayNames(['en'], { type: 'region' });
 
     onMount(async () => {
+        // keep `scale` synced to the postcard's live width so the stamp scatter
+        // tracks it as the postcard resizes (see POSITION SCALING above)
+        if (stage) {
+            scale = stage.clientWidth / REF_W;
+            const ro = new ResizeObserver(() => { scale = stage.clientWidth / REF_W; });
+            ro.observe(stage);
+        }
+
         try {
             const res = await fetch('/api/visit');
             if (res.ok) visitStats = await res.json();
@@ -205,8 +226,9 @@
         let vx = 0, vy = 0;
         if (a && b && b.t > a.t) {
             const dt = Math.max(8, b.t - a.t);
-            vx = (b.x - a.x) / dt * 16 * VEL_CARRY;
-            vy = (b.y - a.y) / dt * 16 * VEL_CARRY;
+            // samples are screen px → /scale so the float drifts in reference space
+            vx = (b.x - a.x) / dt * 16 * VEL_CARRY / scale;
+            vy = (b.y - a.y) / dt * 16 * VEL_CARRY / scale;
         }
         if (Math.hypot(vx, vy) > 0.4) {
             startFloat(vx, vy);
@@ -268,8 +290,10 @@
         if (floatRaf) { cancelAnimationFrame(floatRaf); floatRaf = null; }   // stop any in-flight float
         node.style.transition = 'none';    // no smoothing while dragging
         if (card) card.style.transform = `scale(${GRAB_SCALE})`;   // grab-scale up
-        maxX = stage.clientWidth  - node.offsetWidth;
-        maxY = stage.clientHeight - node.offsetHeight;
+        scale = stage.clientWidth / REF_W;   // refresh in case a resize was mid-flight
+        // travel limits in reference space (screen px extents ÷ scale)
+        maxX = (stage.clientWidth  - node.offsetWidth)  / scale;
+        maxY = (stage.clientHeight - node.offsetHeight) / scale;
 
         moved = false;
         samples = [];             // fresh velocity samples for this drag
@@ -301,9 +325,10 @@
             dragging = true;
         }
 
-        // new position = original position + how far the pointer moved
-        pos.x = rubber(originX + dx, 0, maxX);
-        pos.y = rubber(originY + dy, 0, maxY);
+        // new position = original position + how far the pointer moved.
+        // dx/dy are screen px; originX/Y + maxX/Y are reference space → /scale
+        pos.x = rubber(originX + dx / scale, 0, maxX);
+        pos.y = rubber(originY + dy / scale, 0, maxY);
 
         samples.push({ x: event.clientX, y: event.clientY, t: event.timeStamp });
         if (samples.length > 5) samples.shift();
@@ -428,7 +453,7 @@
                         <div
                             class="floating-item"
                             style:--card-w={cardbingo.width}
-                            style:transform="translate3d({cardbingo.x}px, {cardbingo.y}px, 0) rotate({cardbingo.rotation}deg)"
+                            style:transform="translate3d({cardbingo.x * scale}px, {cardbingo.y * scale}px, 0) rotate({cardbingo.rotation}deg)"
                             style:z-index={cardbingo.z}
                             use:draggable={cardbingo}
                         >
@@ -441,7 +466,7 @@
                         <div
                             class="floating-item"
                             style:--card-w={cardxcode.width}
-                            style:transform="translate3d({cardxcode.x}px, {cardxcode.y}px, 0) rotate({cardxcode.rotation}deg)"
+                            style:transform="translate3d({cardxcode.x * scale}px, {cardxcode.y * scale}px, 0) rotate({cardxcode.rotation}deg)"
                             style:z-index={cardxcode.z}
                             use:draggable={cardxcode}
                         >
@@ -454,7 +479,7 @@
                         <div
                             class="floating-item"
                             style:--card-w={cardrabbit.width}
-                            style:transform="translate3d({cardrabbit.x}px, {cardrabbit.y}px, 0) rotate({cardrabbit.rotation}deg)"
+                            style:transform="translate3d({cardrabbit.x * scale}px, {cardrabbit.y * scale}px, 0) rotate({cardrabbit.rotation}deg)"
                             style:z-index={cardrabbit.z}
                             use:draggable={cardrabbit}
                         >
@@ -725,10 +750,13 @@
            tracks the postcard width — so their relative sizes stay locked and
            the drag/drop interaction behaves the same at any width. */
         container-type: inline-size;
-        /* 1 unit ≈ the old 1rem at the reference postcard width (~1054px, so
-           14px ≈ 1.33cqw). caps at 1rem (never bigger than the desktop design),
-           shrinks with the postcard, floors at 0.7rem so it stays usable. */
-        --stamp-unit: clamp(0.7rem, 1.33cqw, 1rem);
+        /* Pure-proportional unit: 1.33cqw = 1.33% of the postcard width, no
+           clamp. This makes stamp SIZES scale 1:1 with the postcard, matching
+           the stamp POSITIONS (which scale by width/REF_W) — so the whole
+           scatter is one locked composition that just grows/shrinks with the
+           postcard. Tradeoff: no floor/cap, so stamps get proportionally tiny
+           on very small postcards and large on very wide ones. */
+        --stamp-unit: 1.33cqw;
     }
     #postcard::after {
         content: '';
@@ -916,12 +944,12 @@
     /* ── RESPONSIVE: below this width the two columns stack, right under left.
        The interactive postcard's small-screen behavior is a separate pass
        (stamps still use fixed-px starts), so expect it to look tight here. ── */
-    @media (max-width: 1400px) {
+    @media (max-width: 1450px) {
         /* retune the Tier-1 spacing levers (defined in app.css :root) */
         :root {
-            --page-pad-x: 3rem;
-            --page-pad-top: 3rem;
-            --page-pad-bottom: 3rem;
+            --page-pad-x: 10rem;
+            --page-pad-top: 2rem;
+            --page-pad-bottom: 2rem;
             --col-gap: 3rem;
             --section-gap: 3rem;
         }
@@ -941,13 +969,16 @@
     }
 
     /* ~900px — tablet: tighten the frame + component paddings */
-    @media (max-width: 900px) {
+    @media (max-width: 1000px) {
         :root {
+            --page-pad-top: 1rem;
             --frame-inset: 1.25rem;
             --page-pad-x: 2rem;
             --card-pad: 1.5rem;
             --block-pad: 1.5rem;
             --notes-pad-x: 1.5rem;
+            --col-gap: 2rem;
+            --section-gap: 2rem;
         }
     }
 
@@ -967,6 +998,11 @@
         .zigzag {
             --s: 0.4rem;
         }
+
+        #envelope {
+            padding: 0;
+        }
+        
     }
 
 </style>
