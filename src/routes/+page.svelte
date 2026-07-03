@@ -554,6 +554,12 @@
         padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
         gap: var(--col-gap);
         min-height: 0;      /* allow children to shrink instead of overflowing */
+        /* beyond ~the 1450 breakpoint, freeze the content width and let the
+           extra window space become gutter — this stops the envelope (sized by
+           aspect-ratio from its width) from growing taller and scrolling the
+           page. margin-inline:auto centers the frozen content inside the frame. */
+        max-width: 1600px;
+        margin-inline: auto;
     }
 
     .col {
