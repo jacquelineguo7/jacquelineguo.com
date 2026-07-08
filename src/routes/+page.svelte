@@ -3,6 +3,7 @@
     import { goto } from '$app/navigation';
     import { fade, fly } from 'svelte/transition';
     import { onMount } from 'svelte';
+    import UncoverFooter from '$lib/UncoverFooter.svelte';   // TEST: uncover footer wrapper (remove to revert)
 
     let moved;
     let stage;
@@ -370,6 +371,8 @@
 
 </script>
 
+<!-- TEST: wrapped in UncoverFooter so the footer works on the real homepage. Remove wrapper to revert. -->
+<UncoverFooter>
 <div class="page-container">
     <div class="border">
         <div class="page-layout">
@@ -504,6 +507,7 @@
         </div>
     </div>
 </div>
+</UncoverFooter>
 
 <style>
     :global(*) { box-sizing: border-box; }
