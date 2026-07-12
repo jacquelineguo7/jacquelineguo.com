@@ -379,9 +379,9 @@
                     <div id="intro-section">
                         <div id="intro">
                             <p class="top-p">Hey! This is Jacqueline.</p>
-                            <p>I'm a product + graphic designer, amateur engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC CS Games</a> grad (fight on!) based in the San Francisco Bay Area.</p>
-                            <p>I’m excited by tackling difficult, high-craft technical problems with great people to make our world a better place, so I’m stoked to be starting at <a href="https://withpersona.com/" class="inline-link">Persona</a> soon! Previously, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> working on dev tooling and AI.</p>
-                            <p>Outside of work, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student. Right now, I’m learning about how the web was built and how that contributes to its current state. You can read my field notes <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing.</p>
+                            <p>I’m a designer, engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC grad</a> (fight on!) based in the SF Bay Area.</p>
+                            <p>I’m excited by tackling complex, technical problems with great people to make our world a more beautiful place. Soon, I’ll be at <a href="https://withpersona.com/" class="inline-link">Persona</a> designing a more human internet. Before that, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> Apple working on dev tools and AI.</p>
+                            <p>Recently, I’m thinking a lot about tools for thought and building intentional software that helps augment the human condition for learning, creating, and simply being. You can hear some of my thoughts on <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing. Otherwise, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student.</p>
                             <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
                         </div>
                         <nav id="nav">
