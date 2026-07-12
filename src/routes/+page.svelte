@@ -378,10 +378,11 @@
                     <h1 id="name">Jacqueline Guo</h1>
                     <div id="intro-section">
                         <div id="intro">
-                            <p class="top-p">Hey! This is Jacqueline.</p>
-                            <p>I’m a designer, engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC grad</a> (fight on!) based in the SF Bay Area.</p>
-                            <p>I’m excited by tackling complex, technical problems with great people to make our world a more beautiful place. Soon, I’ll be at <a href="https://withpersona.com/" class="inline-link">Persona</a> designing a more human internet. Before that, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> working on dev tools and AI.</p>
-                            <p>Recently, I’ve been thinking a lot about tools for thought and building intentional software that helps augment the human condition for learning, creating, and simply being. You can hear some of my thoughts on <a href={resolve('/writing')} class="inline-link">here</a>, amongst other writing. Otherwise, I’m probably nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student.</p>
+                            <p class="top-p">Hey, Jacqueline here. Nice to meet you!</p>
+                            <p>I’m a designer, engineer, and recent <a href="https://games.usc.edu/" class="inline-link">USC</a> grad based in the SF Bay Area. </p>
+                            <p>I'm excited by complex, technical problems that make a positive impact on our world, and working on them with great people who hold each other to a high bar of integrity, craft, and care.</p>
+                            <p>Soon, I’ll be at <a href="https://withpersona.com/" class="inline-link">Persona</a>, designing interfaces and systems to help to keep the internet a human place. Before that, I was a design intern at <a href="https://developer.apple.com/xcode/" class="inline-link">Apple</a> exploring how Xcode and dev tools are changing in the AI era.</p>
+                            <p>I’m fascinated by tools for thought and building intentional software that helps augment the human condition for learning, creating, and simply being. I’m probably also nerding out over typography, photographing everyday life, trying a new handcraft, or being a lifelong music student.</p>
                             <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
                         </div>
                         <nav id="nav">
