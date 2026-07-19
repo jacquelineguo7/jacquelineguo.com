@@ -1,6 +1,6 @@
 <script>
     import { resolve } from '$app/paths';
-    import { goto } from '$app/navigation';
+    import { goto, afterNavigate } from '$app/navigation';
     import { fade, fly } from 'svelte/transition';
     import { onMount } from 'svelte';
 
@@ -88,29 +88,44 @@
     );
 
     // ── NAV TEAR-OFF ──────────────────────────────────────────────
-    // Click a nav "tab" → it detaches (falls + spins + fades) like a
-    // torn flyer strip, then we navigate. Because SvelteKit routes
-    // client-side, NAV_DELAY fires the navigation before the 500ms tear
-    // finishes — so at 50ms you see the start of the tear, then the new
-    // page. Bump NAV_DELAY up (toward ~500) to watch the whole fall.
+    // Click a nav "tab" → it detaches (falls + spins + fades) like a torn
+    // flyer strip, then we navigate. The animation is driven by a reactive
+    // `.tearing` class (NOT inline styles) so Svelte fully owns it, and
+    // `afterNavigate` clears it — so when you return to the homepage every
+    // tab is fully restored to its original look and interaction (white,
+    // peels on hover, tears again). The tear is purely an exit flourish.
+    //
+    // Because SvelteKit routes client-side, NAV_DELAY fires navigation
+    // before the 500ms tear finishes — so you see the start of the tear,
+    // then the new page. Bump it up (toward ~500) to watch the whole fall.
     const NAV_DELAY = 75;   // ms after click before navigating
+    let tearing = $state(null);   // href of the tab mid-tear (transient)
+
+    const navItems = [
+        { label: 'Work',    href: resolve('/work') },
+        { label: 'Sandbox', href: resolve('/sandbox') },
+        { label: 'Writing', href: resolve('/writing') },
+        { label: 'About',   href: resolve('/about') },
+    ];
+
     function tearOff(event) {
-        // let modified clicks (open-in-new-tab) and reduced-motion users
-        // use the plain <a> navigation — no animation, no interception
+        // modified clicks (⌘/ctrl-click → new tab) + non-left buttons: let
+        // the browser do its native thing — don't intercept or animate
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+
+        // reduced motion → no tear; the plain <a> navigation proceeds
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
         event.preventDefault();
-        const tab = event.currentTarget;
-        const href = tab.getAttribute('href');
-        tab.style.zIndex = '3';   // fall in front of its neighbors
-        tab.style.transition = 'transform 500ms cubic-bezier(.4, 0, .2, 1), opacity 500ms cubic-bezier(.4, 0, .2, 1)';
-        requestAnimationFrame(() => {
-            tab.style.transform = 'translate(15px, 24px) rotate(22deg)';   // driftX 15 · fall 160 · spin 22
-            tab.style.opacity = '0';                                        // fade 100%
-        });
+        const href = event.currentTarget.getAttribute('href');
+        tearing = href;      // adds .tearing → CSS runs the fall / spin / fade
         setTimeout(() => goto(href), NAV_DELAY);
     }
+
+    // after ANY navigation (including the browser Back button, which
+    // SvelteKit handles client-side) clear the transient tear, so a
+    // returned-to tab is never stuck mid-animation
+    afterNavigate(() => { tearing = null; });
 
     // send every stamp back to its home and leave the placed state
     function goBack() {
@@ -415,10 +430,14 @@
                             <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
                         </div>
                         <nav id="nav">
-                            <a class="nav-link" href={resolve('/work')} onclick={tearOff}>Work</a>
-                            <a class="nav-link" href={resolve('/sandbox')} onclick={tearOff}>Sandbox</a>
-                            <a class="nav-link" href={resolve('/writing')} onclick={tearOff}>Writing</a>
-                            <a class="nav-link" href={resolve('/about')} onclick={tearOff}>About</a>
+                            {#each navItems as item (item.href)}
+                                <a
+                                    class="nav-link"
+                                    class:tearing={tearing === item.href}
+                                    href={item.href}
+                                    onclick={tearOff}
+                                >{item.label}</a>
+                            {/each}
                         </nav>
                     </div>
                 </div>
@@ -669,6 +688,17 @@
         background-color: white;
         transform: rotateX(24deg);
         z-index: 2;
+    }
+
+    /* the tear-off itself — fall + drift + spin + fade. Driven by the reactive
+       `tearing` state; must come last so it wins over :hover mid-tear. */
+    .nav-link.tearing {
+        transition:
+            transform 500ms cubic-bezier(.4, 0, .2, 1),
+            opacity 500ms cubic-bezier(.4, 0, .2, 1);
+        transform: translate(15px, 24px) rotate(22deg);
+        opacity: 0;
+        z-index: 3;
     }
 
     a {
