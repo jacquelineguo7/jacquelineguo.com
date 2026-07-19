@@ -13,6 +13,7 @@
 
     let topZ = 3;                   // highest z-index handed out so far
     let dragging = $state(false);   // true while a stamp is mid-drag
+    let holding = $state(false);    // true while a stamp is grabbed but not yet dragged
     let overZone = $state(false);   // true when the dragged stamp is over the box
 
     // ── POSITION SCALING ──────────────────────────────────────────
@@ -85,6 +86,31 @@
     const homes = Object.fromEntries(
         cards.map(c => [c.href, { x: c.x, y: c.y, rotation: c.rotation }])
     );
+
+    // ── NAV TEAR-OFF ──────────────────────────────────────────────
+    // Click a nav "tab" → it detaches (falls + spins + fades) like a
+    // torn flyer strip, then we navigate. Because SvelteKit routes
+    // client-side, NAV_DELAY fires the navigation before the 500ms tear
+    // finishes — so at 50ms you see the start of the tear, then the new
+    // page. Bump NAV_DELAY up (toward ~500) to watch the whole fall.
+    const NAV_DELAY = 75;   // ms after click before navigating
+    function tearOff(event) {
+        // let modified clicks (open-in-new-tab) and reduced-motion users
+        // use the plain <a> navigation — no animation, no interception
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        event.preventDefault();
+        const tab = event.currentTarget;
+        const href = tab.getAttribute('href');
+        tab.style.zIndex = '3';   // fall in front of its neighbors
+        tab.style.transition = 'transform 500ms cubic-bezier(.4, 0, .2, 1), opacity 500ms cubic-bezier(.4, 0, .2, 1)';
+        requestAnimationFrame(() => {
+            tab.style.transform = 'translate(15px, 24px) rotate(22deg)';   // driftX 15 · fall 160 · spin 22
+            tab.style.opacity = '0';                                        // fade 100%
+        });
+        setTimeout(() => goto(href), NAV_DELAY);
+    }
 
     // send every stamp back to its home and leave the placed state
     function goBack() {
@@ -251,6 +277,7 @@
         }
 
         dragging = false;
+        holding = false;
         overZone = false;
 
         if (moved) lastTap = 0;   // a real drag breaks any pending double-tap sequence
@@ -296,6 +323,7 @@
         maxY = (stage.clientHeight - node.offsetHeight) / scale;
 
         moved = false;
+        holding = true;           // grabbed but not yet dragged → light up the box
         samples = [];             // fresh velocity samples for this drag
         pos.z = ++topZ;           // clicked/grabbed stamp jumps to the front
 
@@ -323,6 +351,7 @@
             if (Math.hypot(dx, dy) <= MOVE_THRESHOLD) return;
             moved = true; // drag, not click
             dragging = true;
+            holding = false;   // moved away → no longer a stationary hold
         }
 
         // new position = original position + how far the pointer moved.
@@ -386,10 +415,10 @@
                             <p class="bottom-p">If any of this speaks to you, please <a href="mailto:jacquelineguo7@gmail.com?subject=something in your intro caught my eye" class="inline-link">drop me a line</a>. I’d love to chat!</p>
                         </div>
                         <nav id="nav">
-                            <a class="nav-link" href={resolve('/work')}>Work</a>
-                            <a class="nav-link" href={resolve('/sandbox')}>Sandbox</a>
-                            <a class="nav-link" href={resolve('/writing')}>Writing</a>
-                            <a class="nav-link" href={resolve('/about')}>About</a>
+                            <a class="nav-link" href={resolve('/work')} onclick={tearOff}>Work</a>
+                            <a class="nav-link" href={resolve('/sandbox')} onclick={tearOff}>Sandbox</a>
+                            <a class="nav-link" href={resolve('/writing')} onclick={tearOff}>Writing</a>
+                            <a class="nav-link" href={resolve('/about')} onclick={tearOff}>About</a>
                         </nav>
                     </div>
                 </div>
@@ -424,7 +453,7 @@
                             </div>
                             <div class="pc-right">
                                 <div class="right-flush-div">
-                                    <div class="stamp-div" class:dragging class:over={overZone} bind:this={dropZone}>
+                                    <div class="stamp-div" class:holding class:dragging class:over={overZone} bind:this={dropZone}>
                                         <!-- bind:this hands you that node after render -->
                                         <p class="stamp-text">Place<br>Stamp<br>Here</p>
                                     </div>
@@ -542,11 +571,30 @@
     }
 
     .border {
-        flex: 1;            /* fill the width of page-container */
+        flex: 1;
         margin: var(--frame-inset);
-        border: 1px dashed #B1C8DC;
-        display: flex;      /* so page-layout can fill its height */
+        display: flex;
         min-height: 0;
+
+        --dash-color: #B1C8DC;
+        --dash-len: 0.8rem;    /* length of each dash */
+        --dash-gap: 1rem;    /* space between dashes */
+        --dash-thick: 1.4px;  /* thickness of the line */
+
+        /* derived: one full period, and the half-gap that pads each side of a
+           dash so the dash sits centered in its tile (→ mirror-symmetric edges) */
+        --dash-period: calc(var(--dash-len) + var(--dash-gap));
+        --dash-inset: calc(var(--dash-gap) / 2);
+
+        /* Each edge tiles ONE symmetric [half-gap | dash | half-gap] period and
+           is anchored at `center`. Because background-position re-phases a
+           *repeating* background, centering lays one dash at the midpoint and
+           tiles outward both ways — so both ends of every edge match. */
+        background:
+            repeating-linear-gradient(90deg, transparent 0 var(--dash-inset), var(--dash-color) var(--dash-inset) calc(var(--dash-inset) + var(--dash-len)), transparent calc(var(--dash-inset) + var(--dash-len)) var(--dash-period)) center top    / var(--dash-period) var(--dash-thick) repeat-x,
+            repeating-linear-gradient(90deg, transparent 0 var(--dash-inset), var(--dash-color) var(--dash-inset) calc(var(--dash-inset) + var(--dash-len)), transparent calc(var(--dash-inset) + var(--dash-len)) var(--dash-period)) center bottom / var(--dash-period) var(--dash-thick) repeat-x,
+            repeating-linear-gradient(0deg,  transparent 0 var(--dash-inset), var(--dash-color) var(--dash-inset) calc(var(--dash-inset) + var(--dash-len)), transparent calc(var(--dash-inset) + var(--dash-len)) var(--dash-period)) left   center / var(--dash-thick) var(--dash-period) repeat-y,
+            repeating-linear-gradient(0deg,  transparent 0 var(--dash-inset), var(--dash-color) var(--dash-inset) calc(var(--dash-inset) + var(--dash-len)), transparent calc(var(--dash-inset) + var(--dash-len)) var(--dash-period)) right  center / var(--dash-thick) var(--dash-period) repeat-y;
     }
 
     .page-layout {
@@ -597,9 +645,11 @@
         display: flex;
         flex-direction: row;
         gap: 0.14rem;
+        perspective: 1000px;   /* gives the tabs' rotateX peel real depth */
     }
 
     .nav-link {
+        position: relative;    /* lets :hover/tear raise it above neighbors via z-index */
         background-color: var(--barelythere--white);
         padding-top: 1.4rem;
         padding-bottom: 1.4rem;
@@ -607,6 +657,18 @@
         text-transform: uppercase;
         color: var(--primary--blue);
         text-decoration: none;
+        transform-origin: center top;   /* peel/tear pivot at the perforation (the dotted seam above) */
+        transition:
+            transform var(--tab-peel-dur, 300ms) var(--ease-out),
+            background-color var(--tab-peel-dur, 300ms) var(--ease-out);
+        will-change: transform;
+    }
+
+    /* hover = the tab peels forward from its top seam, like lifting a flyer strip */
+    .nav-link:hover {
+        background-color: white;
+        transform: rotateX(24deg);
+        z-index: 2;
     }
 
     a {
@@ -808,6 +870,7 @@
             background-color var(--duration-base) var(--ease-out),
             transform var(--duration-base) var(--ease-out);
     }
+    .stamp-div.holding,
     .stamp-div.dragging {                                           /* Hint Stamp Target */
         border: 0.3rem double var(--tertiary--blue);
         background-color: var(--hover--blue);
@@ -842,6 +905,9 @@
     /* respect users who ask for less motion — stamps relocate instantly, no sweep */
     @media (prefers-reduced-motion: reduce) {
         .floating-item { transition: none; }
+        /* no peel, no tear — the tearOff handler also bails out for these users */
+        .nav-link { transition: none; }
+        .nav-link:hover { transform: none; }
     }
 
     .example-card {
@@ -951,7 +1017,7 @@
     /* ── RESPONSIVE: below this width the two columns stack, right under left.
        The interactive postcard's small-screen behavior is a separate pass
        (stamps still use fixed-px starts), so expect it to look tight here. ── */
-    @media (max-width: 1450px) {
+    @media (max-width: 1300px) {
         /* retune the Tier-1 spacing levers (defined in app.css :root) */
         :root {
             --page-pad-x: 10rem;
@@ -973,6 +1039,13 @@
         #right-col {
             flex: 1;   /* drop the 1 : 1.6 desktop ratio when stacked */
         }
+
+        .border {
+            --dash-color: #B1C8DC;
+            --dash-len: 0.8rem;    /* length of each dash */
+            --dash-gap: 1rem;    /* space between dashes */
+            --dash-thick: 1px;  /* thickness of the line */
+        }
     }
 
     /* ~900px — tablet: tighten the frame + component paddings */
@@ -987,13 +1060,21 @@
             --col-gap: 2rem;
             --section-gap: 2rem;
         }
+
+        #envelope {
+            padding: 0;
+        }
+
+        .border {
+            --dash-color: var(--background--blue);
+        }
     }
 
     /* ~600px — phone: minimal spacing */
-    @media (max-width: 600px) {
+    @media (max-width: 500px) {
         :root {
-            --frame-inset: 0.75rem;
-            --page-pad-x: 2rem;
+            --frame-inset: 0rem;
+            --page-pad-x: 3rem;
             --page-pad-top: 2rem;
             --page-pad-bottom: 2rem;
             --section-gap: 2rem;
@@ -1008,6 +1089,10 @@
 
         #envelope {
             padding: 0;
+        }
+
+        .border {
+            --dash-color: var(--background--blue);
         }
         
     }
