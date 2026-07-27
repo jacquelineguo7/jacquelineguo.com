@@ -3,6 +3,7 @@
     import { goto, afterNavigate } from '$app/navigation';
     import { fade, fly } from 'svelte/transition';
     import { onMount } from 'svelte';
+    import PhotoCarousel from '$lib/PhotoCarousel.svelte';
 
     let moved;
     let stage;
@@ -54,6 +55,27 @@
     // hex into .lets-go's background-color below, then delete this block + the
     // <div class="tune-panel"> near the end of the markup. ──
     let goBg = $state('#E8EEF2');          // matches --background--blue
+
+    // ── PHOTO CAROUSEL ────────────────────────────────────────────
+    // Drop new photos in /static/photos and add an entry here — order in this
+    // array is the order they cycle in.
+    const photos = [
+        {
+            src: '/photos/JQG001.webp',
+            alt: 'Lifeguard tower at sunset, Santa Monica',
+            note: 'description',
+        },
+        {
+            src: '/photos/JQG002.webp',
+            alt: 'Empty auditorium before a Google design meetup, "At Scale" on every screen and tote bags on the chairs',
+            note: 'at scale, before doors',
+        },
+        {
+            src: '/photos/JQG003.webp',
+            alt: 'Attendees packed onto tiered seating at a TikTok event, phones up',
+            note: 'front row, phones up',
+        },
+    ];
 
     let cardbingo = $state({
         x: 32, y: 100, rotation: -2, width: 12, z: 1,
@@ -126,6 +148,18 @@
     // SvelteKit handles client-side) clear the transient tear, so a
     // returned-to tab is never stuck mid-animation
     afterNavigate(() => { tearing = null; });
+
+    // afterNavigate covers SvelteKit's client-side nav, but NOT a bfcache
+    // restore: when the browser shows the homepage back from its
+    // back/forward cache it replays the FROZEN DOM + frozen Svelte state
+    // (tearing still = the torn tab's href), and no navigation fires — so
+    // the tab would stay stuck at opacity:0 / translated. `pageshow` is the
+    // one event that fires on a bfcache restore, so reset the tear there.
+    $effect(() => {
+        const onPageShow = () => { tearing = null; };
+        window.addEventListener('pageshow', onPageShow);
+        return () => window.removeEventListener('pageshow', onPageShow);
+    });
 
     // send every stamp back to its home and leave the placed state
     function goBack() {
@@ -542,7 +576,7 @@
 
                 <div id="other">
                     <div id="photo">
-                        <img src="/photos/JQG001.webp" alt="temp place for photography">
+                        <PhotoCarousel {photos} />
                     </div>
 
                     <div id="random">
@@ -734,15 +768,8 @@
     #photo {
         flex: 0.8;
         overflow: hidden;
-        padding: 1rem 1rem 3.5rem 1rem;
+        padding: 1rem 1rem 1.5rem 1rem;
         background-color: white;
-    }
-
-    #photo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
     }
 
     #random {
